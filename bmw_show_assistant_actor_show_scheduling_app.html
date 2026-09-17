@@ -1,0 +1,2232 @@
+<!DOCTYPE html>
+<html lang="en" class="h-full bg-black text-white">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>BMW Show Assitant - Actor & Show Scheduling App</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            // Pure black application background with high-contrast warm timber card surfaces
+            slate: {
+              950: '#000000', // Pure black base
+              900: '#2d1a12', // Contrast card surface
+              850: '#382117', // Highlight card surface
+              800: '#5c3624', // Prominent card border
+              700: '#7d4a32', // Elevated border
+              600: '#9e5e3f',
+              500: '#ba734f',
+              400: '#d6926f',
+              300: '#edd0bf',
+              200: '#f5e4db',
+              100: '#ffffff',
+            },
+            indigo: {
+              950: '#000000',
+              900: '#3a1708',
+              800: '#61250b',
+              700: '#94380e',
+              600: '#b84610',
+              500: '#dc5310',
+              400: '#f97316',
+              300: '#fdba74',
+              200: '#fed7aa',
+              100: '#ffffff',
+            },
+            purple: {
+              950: '#000000',
+              900: '#381604',
+              800: '#612b0a',
+              700: '#873c0d',
+              600: '#ab4d09',
+              500: '#cf5e06',
+              400: '#f59e0b',
+              300: '#fcd34d',
+            }
+          }
+        }
+      }
+    }
+  </script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+  <style>
+    html, body, main { 
+      font-family: 'Inter', sans-serif;
+      background-color: #000000 !important;
+      color: #ffffff !important;
+    }
+    /* Universal white typography rule across all elements, icons, headers, and controls */
+    *, *::before, *::after {
+      color: #ffffff !important;
+      -webkit-text-fill-color: #ffffff !important;
+    }
+    ::placeholder {
+      color: rgba(255, 255, 255, 0.65) !important;
+      -webkit-text-fill-color: rgba(255, 255, 255, 0.65) !important;
+    }
+    .custom-scrollbar::-webkit-scrollbar { width: 7px; height: 7px; }
+    .custom-scrollbar::-webkit-scrollbar-track { background: #000000; }
+    .custom-scrollbar::-webkit-scrollbar-thumb { background: #5c3624; border-radius: 9999px; border: 1px solid #382117; }
+    .custom-scrollbar::-webkit-scrollbar-thumb:hover { background: #7d4a32; }
+    @keyframes highlightPulse {
+      0%, 100% { border-color: #ea580c; box-shadow: 0 0 0 4px rgba(234, 88, 12, 0.45); }
+      50% { border-color: #ffffff; box-shadow: 0 0 0 8px rgba(255, 255, 255, 0.6); }
+    }
+    .highlight-card { animation: highlightPulse 1.6s ease-in-out 2; }
+    .pc-kbd {
+      font-size: 9px;
+      padding: 1px 5px;
+      border-radius: 4px;
+      background: #000000;
+      border: 1px solid #5c3624;
+      color: #ffffff !important;
+    }
+  </style>
+</head>
+<body class="h-full flex flex-col bg-black text-white overflow-hidden select-none">
+
+  <header class="bg-black/95 backdrop-blur-md border-b border-[#3d2317] shrink-0 z-20 shadow-xl shadow-black">
+    <div class="max-w-[1720px] mx-auto px-4 sm:px-6 lg:px-8">
+      <div class="flex items-center justify-between h-16">
+        <div class="flex items-center gap-3">
+          <div class="w-10 h-10 rounded-xl bg-gradient-to-tr from-amber-700 via-orange-600 to-amber-500 flex items-center justify-center shadow-lg shadow-black border border-amber-600/40">
+            <i class="fa-solid fa-leaf text-white text-base"></i>
+          </div>
+          <div>
+            <div class="flex items-center gap-2">
+              <h1 class="font-black text-lg tracking-tight text-white">BMW Show Assitant</h1>
+              <span class="text-[10px] font-semibold tracking-wide uppercase px-2 py-0.5 rounded-full bg-black border border-[#5c3624] text-white flex items-center gap-1">
+                <i class="fa-solid fa-display text-[9px]"></i> PC Edition
+              </span>
+            </div>
+            <p class="text-[10px] text-white font-medium tracking-wider">Stage & Cast Production Ledger</p>
+          </div>
+        </div>
+
+        <!-- 7 Main Tabs (Strict Order: 1. HELP, 2. ACTORS, 3. CUSTOMERS, 4. SHOWS, 5. CALENDAR, 6. ACCOUNTING, 7. BACKUP) -->
+        <nav class="flex space-x-1 sm:space-x-1.5 bg-black p-1.5 rounded-2xl border border-[#3d2317] overflow-x-auto custom-scrollbar">
+          <button onclick="switchTab('help')" id="tab-btn-help" title="Press [1] on keyboard" class="tab-btn px-3 py-1.5 rounded-xl text-xs sm:text-sm font-semibold transition-all flex items-center gap-2 text-white bg-[#2d1a12] border border-[#7d4a32] shadow-md">
+            <span class="w-5 h-5 rounded-md bg-black border border-[#5c3624] flex items-center justify-center text-[10px] font-mono font-bold text-white">1</span>
+            <i class="fa-solid fa-circle-question text-xs"></i> <span>HELP</span>
+            <kbd class="hidden xl:inline pc-kbd">1</kbd>
+          </button>
+          <button onclick="switchTab('actors')" id="tab-btn-actors" title="Press [2] on keyboard" class="tab-btn px-3 py-1.5 rounded-xl text-xs sm:text-sm font-semibold transition-all flex items-center gap-2 text-slate-400 hover:text-slate-200 hover:bg-slate-850">
+            <span class="w-5 h-5 rounded-md bg-slate-900 border border-slate-700 flex items-center justify-center text-[10px] font-mono font-bold text-slate-300">2</span>
+            <i class="fa-solid fa-user-ninja text-xs"></i> <span>ACTORS</span>
+            <kbd class="hidden xl:inline pc-kbd">2</kbd>
+          </button>
+          <button onclick="switchTab('customers')" id="tab-btn-customers" title="Press [3] on keyboard" class="tab-btn px-3 py-1.5 rounded-xl text-xs sm:text-sm font-semibold transition-all flex items-center gap-2 text-slate-400 hover:text-slate-200 hover:bg-slate-850">
+            <span class="w-5 h-5 rounded-md bg-slate-900 border border-slate-700 flex items-center justify-center text-[10px] font-mono font-bold text-slate-300">3</span>
+            <i class="fa-solid fa-building-user text-xs"></i> <span>CUSTOMERS</span>
+            <kbd class="hidden xl:inline pc-kbd">3</kbd>
+          </button>
+          <button onclick="switchTab('shows')" id="tab-btn-shows" title="Press [4] on keyboard" class="tab-btn px-3 py-1.5 rounded-xl text-xs sm:text-sm font-semibold transition-all flex items-center gap-2 text-slate-400 hover:text-slate-200 hover:bg-slate-850">
+            <span class="w-5 h-5 rounded-md bg-slate-900 border border-slate-700 flex items-center justify-center text-[10px] font-mono font-bold text-slate-300">4</span>
+            <i class="fa-solid fa-clapperboard text-xs"></i> <span>SHOWS</span>
+            <kbd class="hidden xl:inline pc-kbd">4</kbd>
+          </button>
+          <button onclick="switchTab('calendar')" id="tab-btn-calendar" title="Press [5] on keyboard" class="tab-btn px-3 py-1.5 rounded-xl text-xs sm:text-sm font-semibold transition-all flex items-center gap-2 text-slate-400 hover:text-slate-200 hover:bg-slate-850">
+            <span class="w-5 h-5 rounded-md bg-slate-900 border border-slate-700 flex items-center justify-center text-[10px] font-mono font-bold text-slate-300">5</span>
+            <i class="fa-solid fa-calendar-days text-xs"></i> <span>CALENDER</span>
+            <kbd class="hidden xl:inline pc-kbd">5</kbd>
+          </button>
+          <button onclick="switchTab('accounting')" id="tab-btn-accounting" title="Press [6] on keyboard" class="tab-btn px-3 py-1.5 rounded-xl text-xs sm:text-sm font-semibold transition-all flex items-center gap-2 text-slate-400 hover:text-slate-200 hover:bg-slate-850">
+            <span class="w-5 h-5 rounded-md bg-slate-900 border border-slate-700 flex items-center justify-center text-[10px] font-mono font-bold text-slate-300">6</span>
+            <i class="fa-solid fa-receipt text-xs"></i> <span>ACCOUNTING</span>
+            <kbd class="hidden xl:inline pc-kbd">6</kbd>
+          </button>
+          <button onclick="switchTab('backup')" id="tab-btn-backup" title="Press [7] on keyboard" class="tab-btn px-3 py-1.5 rounded-xl text-xs sm:text-sm font-semibold transition-all flex items-center gap-2 text-slate-400 hover:text-slate-200 hover:bg-slate-850">
+            <span class="w-5 h-5 rounded-md bg-slate-900 border border-slate-700 flex items-center justify-center text-[10px] font-mono font-bold text-slate-300">7</span>
+            <i class="fa-solid fa-shield-halved text-xs text-amber-400"></i> <span>BACKUP</span>
+            <kbd class="hidden xl:inline pc-kbd">7</kbd>
+            <span class="w-2 h-2 rounded-full bg-amber-500 animate-ping"></span>
+          </button>
+        </nav>
+      </div>
+    </div>
+  </header>
+
+  <main class="flex-1 overflow-y-auto custom-scrollbar p-4 sm:p-6 lg:p-8 max-w-[1720px] w-full mx-auto">
+    
+    <!-- 1. HELP VIEW (Workflow & Tab Relationships) -->
+    <section id="view-help" class="space-y-6">
+      <div class="bg-gradient-to-r from-slate-900 via-slate-850 to-slate-900 p-6 rounded-2xl border border-slate-800 shadow-xl">
+        <div class="flex flex-col md:flex-row md:items-center justify-between gap-4">
+          <div class="space-y-1">
+            <div class="flex items-center gap-2">
+              <span class="px-2.5 py-0.5 rounded-md bg-amber-950/80 border border-amber-600/40 text-amber-300 text-xs font-mono font-bold">TAB 1 GUIDE</span>
+              <h2 class="text-xl sm:text-2xl font-black text-white">System Architecture & Workflow Order</h2>
+            </div>
+            <p class="text-xs sm:text-sm text-slate-300 max-w-3xl leading-relaxed">
+              BMW Show Assitant is designed with a sequential 7-step pipeline. Review the step order below to understand how data moves from your talent roster into shows, venues, schedule views, accounting ledgers, and automated snapshots.
+            </p>
+          </div>
+          <div class="flex flex-wrap items-center gap-2">
+            <button onclick="switchTab('actors')" class="px-4 py-2 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-semibold shadow-lg transition active:scale-95 flex items-center gap-2">
+              <span>Start at Step 2 (Actors)</span> <i class="fa-solid fa-arrow-right text-xs"></i>
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
+        <!-- Step 1 Help -->
+        <div class="bg-slate-900/80 border border-slate-800/90 rounded-2xl p-4 shadow-lg flex flex-col justify-between">
+          <div>
+            <div class="flex items-center justify-between mb-2">
+              <span class="w-7 h-7 rounded-lg bg-amber-950/80 border border-amber-600/40 text-amber-300 flex items-center justify-center font-mono font-bold text-xs">1</span>
+              <span class="text-[11px] font-semibold text-amber-400">Orientation</span>
+            </div>
+            <h3 class="text-base font-bold text-white mb-1">HELP & Pipeline Flow</h3>
+            <p class="text-xs text-slate-400 leading-relaxed">
+              Provides the master guide explaining module functions, how tabs interconnect, and how the show cost formula calculates. You can return here anytime by clicking Tab 1 or pressing <kbd class="pc-kbd">1</kbd>.
+            </p>
+          </div>
+          <div class="mt-4 pt-3 border-t border-slate-800/70 text-[11px] text-indigo-300 font-mono">
+            Key Role: Master Guide & Calculations
+          </div>
+        </div>
+
+        <!-- Step 2 Actors -->
+        <div class="bg-slate-900/80 border border-slate-800/90 rounded-2xl p-4 shadow-lg flex flex-col justify-between">
+          <div>
+            <div class="flex items-center justify-between mb-2">
+              <span class="w-7 h-7 rounded-lg bg-slate-850 border border-slate-700 text-slate-200 flex items-center justify-center font-mono font-bold text-xs">2</span>
+              <span class="text-[11px] font-semibold text-indigo-400">Talent Roster</span>
+            </div>
+            <h3 class="text-base font-bold text-white mb-1">ACTORS</h3>
+            <p class="text-xs text-slate-400 leading-relaxed">
+              Add and subtract actors. Each actor stores their phone, email, emergency contact, specialty, and individual <strong>Show Rate ($)</strong> (defaults to $85.00, fully editable). Contains individual show logs.
+            </p>
+          </div>
+          <div class="mt-4 pt-3 border-t border-slate-800/70 flex items-center justify-between">
+            <span class="text-[11px] text-slate-400">Feeds into: <strong>Shows, Ledger</strong></span>
+            <button onclick="switchTab('actors')" class="text-xs text-indigo-400 hover:text-indigo-300 font-semibold">Open Tab 2 &rarr;</button>
+          </div>
+        </div>
+
+        <!-- Step 3 Customers -->
+        <div class="bg-slate-900/80 border border-slate-800/90 rounded-2xl p-4 shadow-lg flex flex-col justify-between">
+          <div>
+            <div class="flex items-center justify-between mb-2">
+              <span class="w-7 h-7 rounded-lg bg-slate-850 border border-slate-700 text-slate-200 flex items-center justify-center font-mono font-bold text-xs">3</span>
+              <span class="text-[11px] font-semibold text-indigo-400">Client Directory</span>
+            </div>
+            <h3 class="text-base font-bold text-white mb-1">CUSTOMERS</h3>
+            <p class="text-xs text-slate-400 leading-relaxed">
+              Store venue directors and corporate clients before scheduling. Click <strong>"Booked Shows"</strong> on any customer card to review their lifetime booking record and billed production volume.
+            </p>
+          </div>
+          <div class="mt-4 pt-3 border-t border-slate-800/70 flex items-center justify-between">
+            <span class="text-[11px] text-slate-400">Linked to: <strong>Shows Production</strong></span>
+            <button onclick="switchTab('customers')" class="text-xs text-indigo-400 hover:text-indigo-300 font-semibold">Open Tab 3 &rarr;</button>
+          </div>
+        </div>
+
+        <!-- Step 4 Shows -->
+        <div class="bg-slate-900/80 border border-slate-800/90 rounded-2xl p-4 shadow-lg flex flex-col justify-between">
+          <div>
+            <div class="flex items-center justify-between mb-2">
+              <span class="w-7 h-7 rounded-lg bg-slate-850 border border-slate-700 text-slate-200 flex items-center justify-center font-mono font-bold text-xs">4</span>
+              <span class="text-[11px] font-semibold text-indigo-400">Production Engine</span>
+            </div>
+            <h3 class="text-base font-bold text-white mb-1">SHOWS</h3>
+            <p class="text-xs text-slate-400 leading-relaxed">
+              Schedule productions. Select client, venue, date, time, and check off actors. The cost engine dynamically computes:
+              <span class="block font-mono text-[11px] text-amber-300 mt-1">Cost Base + (Actors × AAC) + Sum(Actor Rates) + Travel + Stay</span>
+            </p>
+          </div>
+          <div class="mt-4 pt-3 border-t border-slate-800/70 flex items-center justify-between">
+            <span class="text-[11px] text-slate-400">Feeds into: <strong>Calendar, Accounting</strong></span>
+            <button onclick="switchTab('shows')" class="text-xs text-indigo-400 hover:text-indigo-300 font-semibold">Open Tab 4 &rarr;</button>
+          </div>
+        </div>
+
+        <!-- Step 5 Calendar -->
+        <div class="bg-slate-900/80 border border-slate-800/90 rounded-2xl p-4 shadow-lg flex flex-col justify-between">
+          <div>
+            <div class="flex items-center justify-between mb-2">
+              <span class="w-7 h-7 rounded-lg bg-slate-850 border border-slate-700 text-slate-200 flex items-center justify-center font-mono font-bold text-xs">5</span>
+              <span class="text-[11px] font-semibold text-indigo-400">Visual Schedules</span>
+            </div>
+            <h3 class="text-base font-bold text-white mb-1">CALENDAR</h3>
+            <p class="text-xs text-slate-400 leading-relaxed">
+              Inspect schedule density in <strong>Month</strong> and <strong>Week</strong> views. Clicking any show directly navigates to the <strong>SHOWS</strong> tab, automatically focusing and highlighting that production card.
+            </p>
+          </div>
+          <div class="mt-4 pt-3 border-t border-slate-800/70 flex items-center justify-between">
+            <span class="text-[11px] text-slate-400">Links into: <strong>SHOWS View</strong></span>
+            <button onclick="switchTab('calendar')" class="text-xs text-indigo-400 hover:text-indigo-300 font-semibold">Open Tab 5 &rarr;</button>
+          </div>
+        </div>
+
+        <!-- Step 6 Accounting -->
+        <div class="bg-slate-900/80 border border-slate-800/90 rounded-2xl p-4 shadow-lg flex flex-col justify-between">
+          <div>
+            <div class="flex items-center justify-between mb-2">
+              <span class="w-7 h-7 rounded-lg bg-slate-850 border border-slate-700 text-slate-200 flex items-center justify-center font-mono font-bold text-xs">6</span>
+              <span class="text-[11px] font-semibold text-indigo-400">Financial Ledger</span>
+            </div>
+            <h3 class="text-base font-bold text-white mb-1">ACCOUNTING</h3>
+            <p class="text-xs text-slate-400 leading-relaxed">
+              Default list view from today forward displaying Show, Date, Actors, Cost, Fee, Net Margin, and Paid status. Interactive dropdown lets you change payment settlements with real-time KPI updates.
+            </p>
+          </div>
+          <div class="mt-4 pt-3 border-t border-slate-800/70 flex items-center justify-between">
+            <span class="text-[11px] text-slate-400">Summarizes: <strong>Revenues & Costs</strong></span>
+            <button onclick="switchTab('accounting')" class="text-xs text-indigo-400 hover:text-indigo-300 font-semibold">Open Tab 6 &rarr;</button>
+          </div>
+        </div>
+
+        <!-- Step 7 Backup -->
+        <div class="bg-slate-900/80 border border-slate-800/90 rounded-2xl p-4 shadow-lg flex flex-col justify-between md:col-span-2 xl:col-span-3">
+          <div class="flex flex-col md:flex-row md:items-center justify-between gap-4">
+            <div>
+              <div class="flex items-center gap-2 mb-1">
+                <span class="w-7 h-7 rounded-lg bg-slate-850 border border-slate-700 text-amber-400 flex items-center justify-center font-mono font-bold text-xs">7</span>
+                <span class="text-base font-bold text-white">BACKUP & Data Protection</span>
+              </div>
+              <p class="text-xs text-slate-400 max-w-3xl leading-relaxed">
+                Automatically takes a snapshot on opening to <code>default.json</code> and repeats every 5 minutes with a live countdown timer. Supports direct directory linkage via the File System Access API, custom folder/file naming, and instant JSON imports with auto-overwrite enabled.
+              </p>
+            </div>
+            <button onclick="switchTab('backup')" class="px-4 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-amber-300 border border-slate-700 text-xs font-semibold whitespace-nowrap transition">
+              Open Tab 7 (Backup) &rarr;
+            </button>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section id="view-actors" class="hidden space-y-6">
+      <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-slate-900/60 p-4 rounded-2xl border border-slate-800">
+        <div>
+          <h2 class="text-xl font-bold tracking-tight text-white flex items-center gap-2">
+            <i class="fa-solid fa-users text-indigo-400"></i> Actor Roster
+          </h2>
+          <p class="text-xs text-slate-400">Manage cast members, standard show rates (defaults to $85.00), emergency contacts, and individual show logs.</p>
+        </div>
+        <div class="flex items-center gap-2">
+          <button onclick="openActorModal()" class="px-4 py-2 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white text-xs sm:text-sm font-semibold shadow-lg shadow-indigo-600/30 flex items-center gap-2 transition active:scale-95">
+            <i class="fa-solid fa-user-plus"></i> Add Actor
+          </button>
+        </div>
+      </div>
+
+      <!-- Actors Grid -->
+      <div id="actors-grid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4"></div>
+    </section>
+
+    <!-- 3. CUSTOMERS VIEW -->
+    <section id="view-customers" class="hidden space-y-6">
+      <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-slate-900/60 p-4 rounded-2xl border border-slate-800">
+        <div>
+          <h2 class="text-xl font-bold tracking-tight text-white flex items-center gap-2">
+            <i class="fa-solid fa-building text-indigo-400"></i> Customer & Venue Directory
+          </h2>
+          <p class="text-xs text-slate-400">Client details, contact information, and lifetime show booking logs.</p>
+        </div>
+        <button onclick="openCustomerModal()" class="px-4 py-2 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white text-xs sm:text-sm font-semibold shadow-lg shadow-indigo-600/30 flex items-center gap-2 transition active:scale-95">
+          <i class="fa-solid fa-plus"></i> Add Customer
+        </button>
+      </div>
+
+      <!-- Customers Grid -->
+      <div id="customers-grid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4"></div>
+    </section>
+
+    <!-- 4. SHOWS VIEW -->
+    <section id="view-shows" class="hidden space-y-6">
+      <div class="flex flex-col xl:flex-row xl:items-center justify-between gap-4 bg-slate-900/60 p-4 rounded-2xl border border-slate-800">
+        <div>
+          <h2 class="text-xl font-bold tracking-tight text-white flex items-center gap-2">
+            <i class="fa-solid fa-clapperboard text-indigo-400"></i> Show Productions
+          </h2>
+          <p class="text-xs text-slate-400">Calculate show costs: Cost Base + AAC per actor + Actor Rates + Travel & Overnight expenses.</p>
+        </div>
+        <div class="flex flex-wrap items-center gap-2.5">
+          <!-- Cost Base per show Input Box -->
+          <div class="flex items-center gap-2 bg-slate-950 px-3 py-1.5 rounded-xl border border-slate-800 text-xs">
+            <label for="shows-base-cost" class="text-slate-300 font-medium whitespace-nowrap flex items-center gap-1.5">
+              <i class="fa-solid fa-coins text-amber-400 text-xs"></i> Cost Base:
+            </label>
+            <div class="relative flex items-center">
+              <span class="absolute left-2.5 text-slate-500 font-mono text-xs">$</span>
+              <input type="number" id="shows-base-cost" step="0.01" min="0" value="400" onchange="updateDefaultCostBase(this.value)" class="w-20 bg-slate-900 border border-slate-700 rounded-lg pl-6 pr-2 py-1 text-xs font-mono text-white focus:ring-1 focus:ring-indigo-500 focus:outline-none" title="Default base cost applied to shows">
+            </div>
+          </div>
+
+          <!-- AAC per actor Input Box -->
+          <div class="flex items-center gap-2 bg-slate-950 px-3 py-1.5 rounded-xl border border-slate-800 text-xs">
+            <label for="shows-aac-rate" class="text-slate-300 font-medium whitespace-nowrap flex items-center gap-1.5">
+              <i class="fa-solid fa-user-tag text-amber-400 text-xs"></i> AAC / Actor:
+            </label>
+            <div class="relative flex items-center">
+              <span class="absolute left-2.5 text-slate-500 font-mono text-xs">$</span>
+              <input type="number" id="shows-aac-rate" step="0.01" min="0" value="200" onchange="updateDefaultAacRate(this.value)" class="w-20 bg-slate-900 border border-slate-700 rounded-lg pl-6 pr-2 py-1 text-xs font-mono text-white focus:ring-1 focus:ring-indigo-500 focus:outline-none" title="Assigned Actor Cost (AAC) charge per actor">
+            </div>
+          </div>
+
+          <!-- Timeline View Toggle (Default: From Today Forward) -->
+          <div class="inline-flex rounded-xl bg-slate-950 p-1 border border-slate-800 text-xs">
+            <button onclick="setShowFilter('upcoming')" id="btn-show-upcoming" class="px-3 py-1.5 rounded-lg font-medium transition bg-indigo-600 text-white shadow">From Today Forward</button>
+            <button onclick="setShowFilter('all')" id="btn-show-all" class="px-3 py-1.5 rounded-lg font-medium text-slate-400 hover:text-white transition">All Shows</button>
+            <button onclick="setShowFilter('past')" id="btn-show-past" class="px-3 py-1.5 rounded-lg font-medium text-slate-400 hover:text-white transition">Past Shows</button>
+          </div>
+          <button onclick="openShowModal()" class="px-4 py-2 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white text-xs sm:text-sm font-semibold shadow-lg shadow-indigo-600/30 flex items-center gap-2 transition active:scale-95">
+            <i class="fa-solid fa-calendar-plus"></i> Schedule Show
+          </button>
+        </div>
+      </div>
+
+      <!-- Shows Grid -->
+      <div id="shows-container" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4"></div>
+    </section>
+
+    <!-- 5. CALENDAR VIEW -->
+    <section id="view-calendar" class="hidden space-y-6">
+      <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-slate-900/60 p-4 rounded-2xl border border-slate-800">
+        <div class="flex items-center gap-3">
+          <h2 id="cal-current-label" class="text-xl font-bold tracking-tight text-white min-w-[200px]">September 2026</h2>
+          <div class="flex items-center gap-1 bg-slate-950 p-1 rounded-xl border border-slate-800">
+            <button onclick="calendarNav(-1)" class="w-8 h-8 rounded-lg hover:bg-slate-850 text-slate-300 flex items-center justify-center transition"><i class="fa-solid fa-chevron-left text-xs"></i></button>
+            <button onclick="calendarToday()" class="px-2.5 py-1 text-xs font-semibold rounded-lg hover:bg-slate-850 text-indigo-400 transition">Today</button>
+            <button onclick="calendarNav(1)" class="w-8 h-8 rounded-lg hover:bg-slate-850 text-slate-300 flex items-center justify-center transition"><i class="fa-solid fa-chevron-right text-xs"></i></button>
+          </div>
+        </div>
+        <div class="flex items-center gap-2">
+          <div class="inline-flex rounded-xl bg-slate-950 p-1 border border-slate-800 text-xs">
+            <button onclick="setCalendarMode('month')" id="cal-btn-month" class="px-3 py-1.5 rounded-lg font-medium transition bg-indigo-600 text-white shadow">Month View</button>
+            <button onclick="setCalendarMode('week')" id="cal-btn-week" class="px-3 py-1.5 rounded-lg font-medium text-slate-400 hover:text-white transition">Week View</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Calendar Container -->
+      <div class="bg-slate-900/70 border border-slate-800 rounded-2xl p-4 shadow-xl overflow-x-auto custom-scrollbar">
+        <div id="calendar-board" class="min-w-[720px]"></div>
+      </div>
+    </section>
+
+    <section id="view-accounting" class="hidden space-y-6">
+      <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 bg-slate-900/60 p-4 rounded-2xl border border-slate-800">
+        <div>
+          <h2 class="text-xl font-bold tracking-tight text-white flex items-center gap-2">
+            <i class="fa-solid fa-file-invoice-dollar text-indigo-400"></i> Financial & Cost Accounting
+          </h2>
+          <p class="text-xs text-slate-400">List view of shows, cast members, costs, fees, and real-time payment status updates.</p>
+        </div>
+        <div class="flex flex-wrap items-center gap-2">
+          <!-- Timeline View Toggle (Default: From Today Forward) -->
+          <div class="inline-flex rounded-xl bg-slate-950 p-1 border border-slate-800 text-xs">
+            <button onclick="setAccountingFilter('upcoming')" id="btn-acct-upcoming" class="px-3 py-1.5 rounded-lg font-medium transition bg-indigo-600 text-white shadow">From Today Forward</button>
+            <button onclick="setAccountingFilter('all')" id="btn-acct-all" class="px-3 py-1.5 rounded-lg font-medium text-slate-400 hover:text-white transition">All Shows</button>
+            <button onclick="setAccountingFilter('past')" id="btn-acct-past" class="px-3 py-1.5 rounded-lg font-medium text-slate-400 hover:text-white transition">Past Shows</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Financial Metrics Summary Cards -->
+      <div class="grid grid-cols-2 lg:grid-cols-4 gap-4">
+        <div class="bg-slate-900/80 p-4 rounded-2xl border border-slate-800">
+          <p class="text-xs text-slate-400 font-medium">Total Show Fees (Billed)</p>
+          <p id="acct-total-fee" class="text-xl font-extrabold text-white mt-1">$0.00</p>
+        </div>
+        <div class="bg-slate-900/80 p-4 rounded-2xl border border-slate-800">
+          <p class="text-xs text-slate-400 font-medium">Total Production Costs</p>
+          <p id="acct-total-cost" class="text-xl font-extrabold text-rose-400 mt-1">$0.00</p>
+        </div>
+        <div class="bg-slate-900/80 p-4 rounded-2xl border border-slate-800">
+          <p class="text-xs text-slate-400 font-medium">Net Profit Margin</p>
+          <p id="acct-net-profit" class="text-xl font-extrabold text-emerald-400 mt-1">$0.00</p>
+        </div>
+        <div class="bg-slate-900/80 p-4 rounded-2xl border border-slate-800">
+          <p class="text-xs text-slate-400 font-medium">Payment Settlements</p>
+          <p id="acct-paid-count" class="text-xl font-extrabold text-indigo-400 mt-1">0 / 0 Paid</p>
+        </div>
+      </div>
+
+      <!-- Accounting Table List View -->
+      <div class="bg-slate-900/80 border border-slate-800 rounded-2xl overflow-hidden shadow-xl">
+        <div class="overflow-x-auto custom-scrollbar">
+          <table class="w-full text-left border-collapse text-xs sm:text-sm">
+            <thead>
+              <tr class="border-b border-slate-800 bg-slate-950/60 text-slate-400 uppercase text-[11px] tracking-wider font-semibold">
+                <th class="py-3 px-4">Show & Venue</th>
+                <th class="py-3 px-4">Date</th>
+                <th class="py-3 px-4">Actors</th>
+                <th class="py-3 px-4">Cost ($)</th>
+                <th class="py-3 px-4">Fee ($)</th>
+                <th class="py-3 px-4">Net ($)</th>
+                <th class="py-3 px-4">Paid Status</th>
+              </tr>
+            </thead>
+            <tbody id="accounting-table-body" class="divide-y divide-slate-800/60"></tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+
+    <section id="view-backup" class="hidden space-y-6">
+      <div class="bg-slate-900/60 p-4 rounded-2xl border border-slate-800 flex flex-col md:flex-row md:items-center justify-between gap-4">
+        <div>
+          <h2 class="text-xl font-bold tracking-tight text-white flex items-center gap-2">
+            <i class="fa-solid fa-database text-amber-400"></i> Backup, Storage & System Sync
+          </h2>
+          <p class="text-xs text-slate-400">Automated 5-minute snapshot engine, direct directory save, and fast JSON import with auto-overwrite.</p>
+        </div>
+        <div class="flex items-center gap-3">
+          <div class="flex items-center gap-2 px-3 py-1.5 bg-slate-950 border border-slate-800 rounded-xl text-xs">
+            <span class="w-2.5 h-2.5 rounded-full bg-emerald-500 animate-pulse"></span>
+            <span class="text-slate-400">Auto-backup cycle:</span>
+            <span id="backup-timer-display" class="font-mono text-emerald-400 font-bold">05:00</span>
+          </div>
+          <button onclick="triggerImmediateAutoBackup()" class="px-3.5 py-1.5 rounded-xl bg-amber-600/20 hover:bg-amber-600/30 text-amber-300 border border-amber-500/30 text-xs font-semibold flex items-center gap-1.5 transition">
+            <i class="fa-solid fa-rotate"></i> Backup Now
+          </button>
+        </div>
+      </div>
+
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <!-- Manual & Directory Save -->
+        <div class="bg-slate-900/80 border border-slate-800 rounded-2xl p-5 space-y-4">
+          <div class="flex items-center gap-3">
+            <div class="w-9 h-9 rounded-xl bg-amber-500/10 border border-amber-500/20 flex items-center justify-center text-amber-400">
+              <i class="fa-solid fa-folder-open"></i>
+            </div>
+            <div>
+              <h3 class="font-bold text-sm text-white">Save Backup File</h3>
+              <p class="text-xs text-slate-400">Export data to a chosen folder or direct download.</p>
+            </div>
+          </div>
+
+          <div class="space-y-3 pt-2">
+            <button onclick="saveBackupWithFolderPicker()" class="w-full py-2.5 px-4 rounded-xl bg-gradient-to-r from-amber-600 to-orange-600 hover:from-amber-500 hover:to-orange-500 text-white font-semibold text-xs sm:text-sm flex items-center justify-center gap-2 shadow-lg shadow-amber-600/20 transition">
+              <i class="fa-solid fa-floppy-disk"></i> Choose Folder & Name to Save...
+            </button>
+            <button onclick="downloadBackupDirect('default.json')" class="w-full py-2 px-4 rounded-xl bg-slate-950 hover:bg-slate-850 border border-slate-700 text-slate-300 font-semibold text-xs flex items-center justify-center gap-2 transition">
+              <i class="fa-solid fa-download text-xs"></i> Download as default.json directly
+            </button>
+            <button onclick="chooseDefaultFolderForAutoBackup()" class="w-full py-2 px-4 rounded-xl bg-indigo-950/40 hover:bg-indigo-900/40 border border-indigo-800/50 text-indigo-300 font-medium text-xs flex items-center justify-center gap-2 transition">
+              <i class="fa-solid fa-link text-xs"></i> Link Directory for Auto-Save (File System API)
+            </button>
+          </div>
+          <div id="dir-status-box" class="text-[11px] p-2.5 rounded-xl bg-slate-950/60 border border-slate-800/80 text-slate-400">
+            <i class="fa-solid fa-circle-info text-indigo-400 mr-1"></i> Auto-backups are downloaded to your standard downloads folder if no custom folder handle is granted.
+          </div>
+        </div>
+
+        <!-- Restore / Import -->
+        <div class="bg-slate-900/80 border border-slate-800 rounded-2xl p-5 space-y-4">
+          <div class="flex items-center gap-3">
+            <div class="w-9 h-9 rounded-xl bg-indigo-500/10 border border-indigo-500/20 flex items-center justify-center text-indigo-400">
+              <i class="fa-solid fa-file-import"></i>
+            </div>
+            <div>
+              <h3 class="font-bold text-sm text-white">Import & Restore</h3>
+              <p class="text-xs text-slate-400">Restore application state from any previously saved JSON backup.</p>
+            </div>
+          </div>
+
+          <div class="pt-2 space-y-3">
+            <label class="flex items-center gap-2.5 p-2.5 rounded-xl bg-slate-950 border border-slate-800 cursor-pointer">
+              <input type="checkbox" id="auto-accept-overwrite" checked class="w-4 h-4 rounded text-indigo-600 bg-slate-900 border-slate-700 focus:ring-indigo-500">
+              <span class="text-xs text-slate-300 font-medium">Automatically overwrite existing app data on import</span>
+            </label>
+
+            <div class="relative border-2 border-dashed border-slate-700 hover:border-indigo-500 rounded-xl p-4 text-center cursor-pointer transition bg-slate-950/40" onclick="document.getElementById('import-file-input').click()">
+              <input type="file" id="import-file-input" accept=".json" class="hidden" onchange="handleFileImport(event)">
+              <i class="fa-solid fa-cloud-arrow-up text-2xl text-slate-500 mb-2"></i>
+              <p class="text-xs font-semibold text-slate-300">Click to Select Backup JSON or Drag & Drop</p>
+              <p class="text-[10px] text-slate-500 mt-1">Accepts default.json or any BMW Show Assistant export</p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Backup Log Table -->
+      <div class="bg-slate-900/80 border border-slate-800 rounded-2xl p-4 space-y-3">
+        <div class="flex items-center justify-between">
+          <h4 class="text-xs font-bold text-slate-300 uppercase tracking-wider">Backup & Auto-Save History</h4>
+          <button onclick="clearBackupLog()" class="text-[11px] text-slate-500 hover:text-rose-400 transition">Clear Log</button>
+        </div>
+        <div class="max-h-48 overflow-y-auto custom-scrollbar">
+          <div id="backup-history-list" class="space-y-1.5 text-xs text-slate-400"></div>
+        </div>
+      </div>
+    </section>
+
+  </main>
+
+  <!-- ACTOR MODAL -->
+  <div id="modal-actor" class="fixed inset-0 z-50 bg-black/80 backdrop-blur-sm hidden flex items-center justify-center p-4 overflow-y-auto">
+    <div class="bg-slate-900 border border-slate-800 rounded-2xl w-full max-w-md p-5 shadow-2xl space-y-4">
+      <div class="flex items-center justify-between border-b border-slate-800 pb-3">
+        <h3 id="modal-actor-title" class="text-base font-bold text-white">Add Actor</h3>
+        <button onclick="closeActorModal()" class="w-7 h-7 rounded-lg hover:bg-slate-800 text-slate-400 hover:text-white flex items-center justify-center transition"><i class="fa-solid fa-xmark"></i></button>
+      </div>
+      <form id="form-actor" onsubmit="saveActor(event)" class="space-y-3">
+        <input type="hidden" id="actor-id">
+        <div>
+          <label class="block text-xs font-medium text-slate-300 mb-1">Full Name *</label>
+          <input type="text" id="actor-name" required class="w-full bg-slate-950 border border-slate-700 rounded-xl px-3 py-2 text-sm text-white focus:ring-2 focus:ring-indigo-500 focus:outline-none">
+        </div>
+        <div class="grid grid-cols-2 gap-3">
+          <div>
+            <label class="block text-xs font-medium text-slate-300 mb-1">Email *</label>
+            <input type="email" id="actor-email" required class="w-full bg-slate-950 border border-slate-700 rounded-xl px-3 py-2 text-sm text-white focus:ring-2 focus:ring-indigo-500 focus:outline-none">
+          </div>
+          <div>
+            <label class="block text-xs font-medium text-slate-300 mb-1">Phone *</label>
+            <input type="tel" id="actor-phone" required class="w-full bg-slate-950 border border-slate-700 rounded-xl px-3 py-2 text-sm text-white focus:ring-2 focus:ring-indigo-500 focus:outline-none">
+          </div>
+        </div>
+        <div class="grid grid-cols-2 gap-3">
+          <div>
+            <label class="block text-xs font-medium text-slate-300 mb-1">Show Rate ($) *</label>
+            <input type="number" step="0.01" min="0" id="actor-rate" value="85.00" required class="w-full bg-slate-950 border border-slate-700 rounded-xl px-3 py-2 text-sm text-white focus:ring-2 focus:ring-indigo-500 focus:outline-none">
+          </div>
+          <div>
+            <label class="block text-xs font-medium text-slate-300 mb-1">Specialty / Role Type</label>
+            <input type="text" id="actor-specialty" placeholder="e.g. Lead Dramatic, Musical" class="w-full bg-slate-950 border border-slate-700 rounded-xl px-3 py-2 text-sm text-white focus:ring-2 focus:ring-indigo-500 focus:outline-none">
+          </div>
+        </div>
+        <div>
+          <label class="block text-xs font-medium text-slate-300 mb-1">Emergency Contact (Name & Phone)</label>
+          <input type="text" id="actor-emergency" placeholder="e.g. Sarah Rostova (555-0199)" class="w-full bg-slate-950 border border-slate-700 rounded-xl px-3 py-2 text-sm text-white focus:ring-2 focus:ring-indigo-500 focus:outline-none">
+        </div>
+        <div>
+          <label class="block text-xs font-medium text-slate-300 mb-1">Roster Status</label>
+          <select id="actor-status" class="w-full bg-slate-950 border border-slate-700 rounded-xl px-3 py-2 text-sm text-white focus:ring-2 focus:ring-indigo-500 focus:outline-none">
+            <option value="active">Active</option>
+            <option value="inactive">Inactive</option>
+          </select>
+        </div>
+        <div class="flex justify-end gap-2 pt-3 border-t border-slate-800">
+          <button type="button" onclick="closeActorModal()" class="px-4 py-2 text-xs font-semibold rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 transition">Cancel</button>
+          <button type="submit" class="px-4 py-2 text-xs font-semibold rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white shadow-lg transition">Save Actor</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- SHOW MODAL -->
+  <div id="modal-show" class="fixed inset-0 z-50 bg-black/80 backdrop-blur-sm hidden flex items-center justify-center p-4 overflow-y-auto">
+    <div class="bg-slate-900 border border-slate-800 rounded-2xl w-full max-w-lg p-5 shadow-2xl space-y-4 max-h-[90vh] overflow-y-auto custom-scrollbar">
+      <div class="flex items-center justify-between border-b border-slate-800 pb-3">
+        <h3 id="modal-show-title" class="text-base font-bold text-white">Schedule New Show</h3>
+        <button onclick="closeShowModal()" class="w-7 h-7 rounded-lg hover:bg-slate-800 text-slate-400 hover:text-white flex items-center justify-center transition"><i class="fa-solid fa-xmark"></i></button>
+      </div>
+      <form id="form-show" onsubmit="saveShow(event)" class="space-y-3">
+        <input type="hidden" id="show-id">
+        <div>
+          <label class="block text-xs font-medium text-slate-300 mb-1">Show / Production Title *</label>
+          <input type="text" id="show-title" required placeholder="e.g. Hamlet in the Park" class="w-full bg-slate-950 border border-slate-700 rounded-xl px-3 py-2 text-sm text-white focus:ring-2 focus:ring-indigo-500 focus:outline-none">
+        </div>
+        <div class="grid grid-cols-2 gap-3">
+          <div>
+            <label class="block text-xs font-medium text-slate-300 mb-1">Customer / Client *</label>
+            <select id="show-customer" required class="w-full bg-slate-950 border border-slate-700 rounded-xl px-3 py-2 text-sm text-white focus:ring-2 focus:ring-indigo-500 focus:outline-none"></select>
+          </div>
+          <div>
+            <label class="block text-xs font-medium text-slate-300 mb-1">Venue Name & Address *</label>
+            <input type="text" id="show-venue" required placeholder="e.g. Grand Civic Hall" class="w-full bg-slate-950 border border-slate-700 rounded-xl px-3 py-2 text-sm text-white focus:ring-2 focus:ring-indigo-500 focus:outline-none">
+          </div>
+        </div>
+        <div class="grid grid-cols-2 gap-3">
+          <div>
+            <label class="block text-xs font-medium text-slate-300 mb-1">Date *</label>
+            <input type="date" id="show-date" required class="w-full bg-slate-950 border border-slate-700 rounded-xl px-3 py-2 text-sm text-white focus:ring-2 focus:ring-indigo-500 focus:outline-none">
+          </div>
+          <div>
+            <label class="block text-xs font-medium text-slate-300 mb-1">Call / Showtime *</label>
+            <input type="time" id="show-time" required class="w-full bg-slate-950 border border-slate-700 rounded-xl px-3 py-2 text-sm text-white focus:ring-2 focus:ring-indigo-500 focus:outline-none">
+          </div>
+        </div>
+        <div>
+          <div class="flex items-center justify-between mb-1">
+            <label class="block text-xs font-medium text-slate-300">Assign Cast Members</label>
+            <span class="text-[10px] text-slate-500">Includes individual actor rates</span>
+          </div>
+          <div id="show-actor-checkboxes" class="grid grid-cols-1 sm:grid-cols-2 gap-2 bg-slate-950 border border-slate-800 rounded-xl p-3 max-h-36 overflow-y-auto custom-scrollbar"></div>
+        </div>
+
+        <!-- Cost Calculation Section -->
+        <div class="grid grid-cols-2 sm:grid-cols-4 gap-2.5">
+          <div>
+            <label class="block text-xs font-medium text-slate-300 mb-1">Cost Base ($) *</label>
+            <input type="number" step="0.01" min="0" id="show-base-cost" value="400.00" oninput="updateShowCostCalculation()" class="w-full bg-slate-950 border border-slate-700 rounded-xl px-2.5 py-1.5 text-xs text-white focus:ring-2 focus:ring-indigo-500 focus:outline-none">
+          </div>
+          <div>
+            <label class="block text-xs font-medium text-slate-300 mb-1">AAC / Actor ($) *</label>
+            <input type="number" step="0.01" min="0" id="show-aac-cost" value="200.00" oninput="updateShowCostCalculation()" class="w-full bg-slate-950 border border-slate-700 rounded-xl px-2.5 py-1.5 text-xs text-white focus:ring-2 focus:ring-indigo-500 focus:outline-none">
+          </div>
+          <div>
+            <label class="block text-xs font-medium text-slate-300 mb-1">Travel ($)</label>
+            <input type="number" step="0.01" min="0" id="show-travel-cost" value="0.00" oninput="updateShowCostCalculation()" class="w-full bg-slate-950 border border-slate-700 rounded-xl px-2.5 py-1.5 text-xs text-white focus:ring-2 focus:ring-indigo-500 focus:outline-none">
+          </div>
+          <div>
+            <label class="block text-xs font-medium text-slate-300 mb-1">Stay ($)</label>
+            <input type="number" step="0.01" min="0" id="show-overnight-cost" value="0.00" oninput="updateShowCostCalculation()" class="w-full bg-slate-950 border border-slate-700 rounded-xl px-2.5 py-1.5 text-xs text-white focus:ring-2 focus:ring-indigo-500 focus:outline-none">
+          </div>
+        </div>
+
+        <div class="p-2.5 rounded-xl bg-indigo-950/40 border border-indigo-800/40 text-[11px] text-indigo-300 flex flex-col gap-1">
+          <div class="flex items-center justify-between">
+            <span class="font-medium text-amber-300">Live Calculation:</span>
+            <span id="cost-breakdown-text" class="font-mono text-white text-right">$400 base + AAC $0 + Actor Rates $0 = $400.00</span>
+          </div>
+        </div>
+
+        <div class="p-2.5 rounded-xl bg-indigo-950/40 border border-indigo-800/40 text-[11px] text-indigo-300 flex flex-col gap-1">
+          <div class="flex items-center justify-between">
+            <span class="font-medium text-amber-300">Live Calculation:</span>
+            <span id="cost-breakdown-text" class="font-mono text-white text-right">$400 base + AAC $0 + ActRates $0 = $400.00</span>
+          </div>
+        </div>
+
+        <div class="grid grid-cols-3 gap-3">
+          <div>
+            <label class="block text-xs font-medium text-slate-300 mb-1">Total Cost ($) *</label>
+            <input type="number" step="0.01" id="show-cost" required class="w-full bg-slate-950 border border-slate-700 rounded-xl px-3 py-2 text-sm text-white focus:ring-2 focus:ring-indigo-500 focus:outline-none">
+          </div>
+          <div>
+            <label class="block text-xs font-medium text-slate-300 mb-1">Client Fee ($) *</label>
+            <input type="number" step="0.01" id="show-fee" required class="w-full bg-slate-950 border border-slate-700 rounded-xl px-3 py-2 text-sm text-white focus:ring-2 focus:ring-indigo-500 focus:outline-none">
+          </div>
+          <div>
+            <label class="block text-xs font-medium text-slate-300 mb-1">Paid Status *</label>
+            <select id="show-paid" class="w-full bg-slate-950 border border-slate-700 rounded-xl px-3 py-2 text-sm text-white focus:ring-2 focus:ring-indigo-500 focus:outline-none">
+              <option value="Paid">Paid</option>
+              <option value="Pending">Pending</option>
+              <option value="Overdue">Overdue</option>
+            </select>
+          </div>
+        </div>
+
+        <div>
+          <label class="block text-xs font-medium text-slate-300 mb-1">Production Status</label>
+          <select id="show-status" class="w-full bg-slate-950 border border-slate-700 rounded-xl px-3 py-2 text-sm text-white focus:ring-2 focus:ring-indigo-500 focus:outline-none">
+            <option value="Scheduled">Scheduled</option>
+            <option value="Completed">Completed</option>
+            <option value="Cancelled">Cancelled</option>
+          </select>
+        </div>
+
+        <div class="flex justify-end gap-2 pt-3 border-t border-slate-800">
+          <button type="button" onclick="closeShowModal()" class="px-4 py-2 text-xs font-semibold rounded-xl bg-slate-850 hover:bg-slate-800 text-slate-300 transition">Cancel</button>
+          <button type="submit" class="px-4 py-2 text-xs font-semibold rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white shadow-lg transition">Save Show</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- CUSTOMER MODAL -->
+  <div id="modal-customer" class="fixed inset-0 z-50 bg-black/80 backdrop-blur-sm hidden flex items-center justify-center p-4 overflow-y-auto">
+    <div class="bg-slate-900 border border-slate-800 rounded-2xl w-full max-w-md p-5 shadow-2xl space-y-4">
+      <div class="flex items-center justify-between border-b border-slate-800 pb-3">
+        <h3 id="modal-customer-title" class="text-base font-bold text-white">Add Customer</h3>
+        <button onclick="closeCustomerModal()" class="w-7 h-7 rounded-lg hover:bg-slate-800 text-slate-400 hover:text-white flex items-center justify-center transition"><i class="fa-solid fa-xmark"></i></button>
+      </div>
+      <form id="form-customer" onsubmit="saveCustomer(event)" class="space-y-3">
+        <input type="hidden" id="customer-id">
+        <div>
+          <label class="block text-xs font-medium text-slate-300 mb-1">Company / Organization *</label>
+          <input type="text" id="cust-name" required class="w-full bg-slate-950 border border-slate-700 rounded-xl px-3 py-2 text-sm text-white focus:ring-2 focus:ring-indigo-500 focus:outline-none">
+        </div>
+        <div>
+          <label class="block text-xs font-medium text-slate-300 mb-1">Contact Person *</label>
+          <input type="text" id="cust-contact" required class="w-full bg-slate-950 border border-slate-700 rounded-xl px-3 py-2 text-sm text-white focus:ring-2 focus:ring-indigo-500 focus:outline-none">
+        </div>
+        <div class="grid grid-cols-2 gap-3">
+          <div>
+            <label class="block text-xs font-medium text-slate-300 mb-1">Email *</label>
+            <input type="email" id="cust-email" required class="w-full bg-slate-950 border border-slate-700 rounded-xl px-3 py-2 text-sm text-white focus:ring-2 focus:ring-indigo-500 focus:outline-none">
+          </div>
+          <div>
+            <label class="block text-xs font-medium text-slate-300 mb-1">Phone *</label>
+            <input type="tel" id="cust-phone" required class="w-full bg-slate-950 border border-slate-700 rounded-xl px-3 py-2 text-sm text-white focus:ring-2 focus:ring-indigo-500 focus:outline-none">
+          </div>
+        </div>
+        <div>
+          <label class="block text-xs font-medium text-slate-300 mb-1">Billing Address / City</label>
+          <input type="text" id="cust-address" class="w-full bg-slate-950 border border-slate-700 rounded-xl px-3 py-2 text-sm text-white focus:ring-2 focus:ring-indigo-500 focus:outline-none">
+        </div>
+        <div class="flex justify-end gap-2 pt-3 border-t border-slate-800">
+          <button type="button" onclick="closeCustomerModal()" class="px-4 py-2 text-xs font-semibold rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 transition">Cancel</button>
+          <button type="submit" class="px-4 py-2 text-xs font-semibold rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white shadow-lg transition">Save Customer</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- SHOW LOG MODAL (For Actors & Customers) -->
+  <div id="modal-log" class="fixed inset-0 z-50 bg-black/80 backdrop-blur-sm hidden flex items-center justify-center p-4 overflow-y-auto">
+    <div class="bg-slate-900 border border-slate-800 rounded-2xl w-full max-w-2xl p-5 shadow-2xl space-y-4 max-h-[85vh] flex flex-col">
+      <div class="flex items-center justify-between border-b border-slate-800 pb-3">
+        <div>
+          <h3 id="modal-log-title" class="text-base font-bold text-white">Show Log</h3>
+          <p id="modal-log-subtitle" class="text-xs text-slate-400"></p>
+        </div>
+        <button onclick="closeLogModal()" class="w-7 h-7 rounded-lg hover:bg-slate-800 text-slate-400 hover:text-white flex items-center justify-center transition"><i class="fa-solid fa-xmark"></i></button>
+      </div>
+      <div class="flex-1 overflow-y-auto custom-scrollbar space-y-2" id="modal-log-body"></div>
+      <div class="flex justify-end pt-3 border-t border-slate-800">
+        <button onclick="closeLogModal()" class="px-4 py-2 text-xs font-semibold rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 transition">Close</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- CONFIRMATION MODAL -->
+  <div id="modal-confirm" class="fixed inset-0 z-50 bg-black/80 backdrop-blur-sm hidden flex items-center justify-center p-4">
+    <div class="bg-slate-900 border border-slate-800 rounded-2xl w-full max-w-sm p-5 shadow-2xl space-y-4">
+      <div class="flex items-center gap-3 text-amber-400">
+        <i class="fa-solid fa-triangle-exclamation text-2xl"></i>
+        <h3 id="confirm-title" class="text-base font-bold text-white">Confirm Action</h3>
+      </div>
+      <p id="confirm-message" class="text-xs text-slate-300 leading-relaxed"></p>
+      <div class="flex justify-end gap-2 pt-2">
+        <button id="confirm-cancel-btn" class="px-4 py-2 text-xs font-semibold rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 transition">Cancel</button>
+        <button id="confirm-action-btn" class="px-4 py-2 text-xs font-semibold rounded-xl bg-rose-600 hover:bg-rose-500 text-white shadow-lg transition">Proceed</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- TOAST NOTIFICATION CONTAINER -->
+  <div id="toast-container" class="fixed bottom-4 right-4 z-50 flex flex-col gap-2 pointer-events-none"></div>
+
+  <script>
+    /* Application State */
+    const STORAGE_KEY = 'showcast_manager_state_v4';
+    let appState = {
+      actors: [],
+      shows: [],
+      customers: [],
+      backupHistory: [],
+      settings: {
+        costBase: 400.00,
+        aacRate: 200.00,
+        autoAcceptOverwrite: true,
+        showFilter: 'upcoming', // 'upcoming', 'all', 'past'
+        accountingFilter: 'upcoming',
+        calendarMode: 'month', // 'month' or 'week'
+        calendarDate: new Date().toISOString()
+      }
+    };
+
+    let directoryHandle = null;
+    let autoBackupInterval = null;
+    let autoBackupCountdown = 300; // 5 minutes in seconds
+
+    const DEMO_STATE = {
+      actors: [
+        { id: 'act-1', name: 'Elena Rostova', email: 'elena@showcast.live', phone: '(555) 234-5678', rate: 95.00, specialty: 'Lead Dramatic / Musical', emergency: 'Dmitri Rostova (555) 234-9988', status: 'active' },
+        { id: 'act-2', name: 'Marcus Sterling', email: 'marcus@showcast.live', phone: '(555) 345-6789', rate: 85.00, specialty: 'Physical Comedy / Acrobatics', emergency: 'Sarah Sterling (555) 345-0011', status: 'active' },
+        { id: 'act-3', name: 'Aaliyah Patel', email: 'aaliyah@showcast.live', phone: '(555) 456-7890', rate: 90.00, specialty: 'Classical Shakespeare / Vocalist', emergency: 'Raj Patel (555) 456-9922', status: 'active' },
+        { id: 'act-4', name: 'Julian Vance', email: 'julian@showcast.live', phone: '(555) 567-8901', rate: 85.00, specialty: 'Stage Combat / Character Actor', emergency: 'Claire Vance (555) 567-3344', status: 'active' },
+        { id: 'act-5', name: 'Sienna Miller', email: 'sienna@showcast.live', phone: '(555) 678-9012', rate: 85.00, specialty: 'Ensemble Lead / Contemporary', emergency: 'David Miller (555) 678-5566', status: 'active' }
+      ],
+      customers: [
+        { id: 'cust-1', name: 'Horizon Performing Arts Center', contactPerson: 'Beatrice Lawson', email: 'lawson@horizonpac.org', phone: '(555) 901-2345', address: '450 Symphony Way, Metro City' },
+        { id: 'cust-2', name: 'Grand Civic Theatre Guild', contactPerson: 'Thomas Higgins', email: 'thiggins@grandcivic.com', phone: '(555) 912-3456', address: '120 Broadway Blvd, West End' },
+        { id: 'cust-3', name: 'Midwest Corporate Events Inc.', contactPerson: 'Rachel Cole', email: 'rachel@midwestevents.com', phone: '(555) 923-4567', address: '880 Financial Plaza, Suite 400' }
+      ],
+      shows: [
+        {
+          id: 'shw-1',
+          title: 'A Midsummer Night\'s Dream',
+          customerId: 'cust-1',
+          venue: 'Horizon Amphitheatre',
+          date: new Date(Date.now() + 86400000 * 2).toISOString().split('T')[0],
+          time: '19:30',
+          actors: ['act-1', 'act-2', 'act-3'],
+          baseCost: 400.00,
+          aacRate: 200.00,
+          travelCost: 150.00,
+          overnightCost: 200.00,
+          cost: 1620.00, // 400 + (3 * 200 = 600) + (95 + 85 + 90 = 270) + 150 + 200 = 1620
+          fee: 3400.00,
+          paid: 'Paid',
+          status: 'Scheduled'
+        },
+        {
+          id: 'shw-2',
+          title: 'The Great Gatsby Gala',
+          customerId: 'cust-3',
+          venue: 'Ritz Ballroom North',
+          date: new Date(Date.now() + 86400000 * 5).toISOString().split('T')[0],
+          time: '20:00',
+          actors: ['act-2', 'act-4', 'act-5'],
+          baseCost: 400.00,
+          aacRate: 200.00,
+          travelCost: 50.00,
+          overnightCost: 0.00,
+          cost: 1305.00, // 400 + 600 + (85 + 85 + 85 = 255) + 50 = 1305
+          fee: 2800.00,
+          paid: 'Pending',
+          status: 'Scheduled'
+        },
+        {
+          id: 'shw-3',
+          title: 'Macbeth - Night of Sorcery',
+          customerId: 'cust-2',
+          venue: 'Grand Mainstage',
+          date: new Date(Date.now() - 86400000 * 10).toISOString().split('T')[0],
+          time: '19:00',
+          actors: ['act-1', 'act-3', 'act-4'],
+          baseCost: 400.00,
+          aacRate: 200.00,
+          travelCost: 0.00,
+          overnightCost: 0.00,
+          cost: 1270.00, // 400 + 600 + (95 + 90 + 85 = 270) = 1270
+          fee: 2900.00,
+          paid: 'Paid',
+          status: 'Completed'
+        }
+      ],
+      backupHistory: [
+        { id: 'bkh-1', timestamp: new Date().toISOString(), type: 'Auto-Backup (Startup)', recordsCount: 11, filename: 'default.json' }
+      ],
+      settings: {
+        costBase: 400.00,
+        aacRate: 200.00,
+        autoAcceptOverwrite: true,
+        showFilter: 'upcoming',
+        accountingFilter: 'upcoming',
+        calendarMode: 'month',
+        calendarDate: new Date().toISOString()
+      }
+    };
+
+    function loadState() {
+      try {
+        const raw = localStorage.getItem(STORAGE_KEY);
+        if (raw) {
+          const parsed = JSON.parse(raw);
+          appState = {
+            ...DEMO_STATE,
+            ...parsed,
+            settings: { ...DEMO_STATE.settings, ...(parsed.settings || {}) }
+          };
+        } else {
+          appState = JSON.parse(JSON.stringify(DEMO_STATE));
+          saveState();
+        }
+      } catch (err) {
+        console.error('Failed to load state from localStorage:', err);
+        appState = JSON.parse(JSON.stringify(DEMO_STATE));
+      }
+    }
+
+    function saveState() {
+      try {
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(appState));
+      } catch (err) {
+        console.error('Failed to persist state:', err);
+      }
+    }
+
+    window.updateShowCostCalculation = function() {
+      const checkboxes = document.querySelectorAll('#show-actor-checkboxes input[type="checkbox"]:checked');
+      const selectedActorIds = Array.from(checkboxes).map(cb => cb.value);
+      const actorCount = selectedActorIds.length;
+
+      // Sum the individual rates of checked actors
+      let actorRatesTotal = 0;
+      selectedActorIds.forEach(id => {
+        const act = appState.actors.find(a => a.id === id);
+        if (act && act.rate !== undefined && !isNaN(act.rate)) {
+          actorRatesTotal += Number(act.rate);
+        } else {
+          actorRatesTotal += 85.00;
+        }
+      });
+
+      const baseCostInput = document.getElementById('show-base-cost');
+      const aacCostInput = document.getElementById('show-aac-cost');
+      const travelInput = document.getElementById('show-travel-cost');
+      const overnightInput = document.getElementById('show-overnight-cost');
+
+      const defaultBase = (appState.settings && appState.settings.costBase !== undefined) ? appState.settings.costBase : 400;
+      const defaultAac = (appState.settings && appState.settings.aacRate !== undefined) ? appState.settings.aacRate : 200;
+
+      const baseCost = baseCostInput ? (parseFloat(baseCostInput.value) || 0) : defaultBase;
+      const aacRate = aacCostInput ? (parseFloat(aacCostInput.value) || 0) : defaultAac;
+      const travelVal = travelInput ? (parseFloat(travelInput.value) || 0) : 0;
+      const overnightVal = overnightInput ? (parseFloat(overnightInput.value) || 0) : 0;
+
+      const aacTotal = actorCount * aacRate;
+      const total = baseCost + aacTotal + actorRatesTotal + travelVal + overnightVal;
+
+      const costInput = document.getElementById('show-cost');
+      if (costInput) {
+        costInput.value = total.toFixed(2);
+      }
+
+      const breakdownEl = document.getElementById('cost-breakdown-text');
+      if (breakdownEl) {
+        breakdownEl.textContent = `$${baseCost.toFixed(0)} base + AAC (${actorCount} × $${aacRate.toFixed(0)} = $${aacTotal.toFixed(0)}) + ActRates ($${actorRatesTotal.toFixed(2)}) + $${(travelVal + overnightVal).toFixed(2)} travel/stay = $${total.toFixed(2)}`;
+      }
+    };
+
+    window.updateDefaultCostBase = function(val) {
+      const num = parseFloat(val);
+      const newBase = isNaN(num) || num < 0 ? 400 : num;
+      if (!appState.settings) appState.settings = {};
+      appState.settings.costBase = newBase;
+      saveState();
+      showToast(`Default Cost Base per show updated to $${newBase.toFixed(2)}.`);
+    };
+
+    window.updateDefaultAacRate = function(val) {
+      const num = parseFloat(val);
+      const newAac = isNaN(num) || num < 0 ? 200 : num;
+      if (!appState.settings) appState.settings = {};
+      appState.settings.aacRate = newAac;
+      saveState();
+      showToast(`Default AAC per actor charge updated to $${newAac.toFixed(2)}.`);
+    };
+
+    window.switchTab = function(tabName) {
+      const tabs = ['help', 'actors', 'customers', 'shows', 'calendar', 'accounting', 'backup'];
+      tabs.forEach(t => {
+        const viewEl = document.getElementById(`view-${t}`);
+        const btnEl = document.getElementById(`tab-btn-${t}`);
+        if (viewEl) viewEl.classList.add('hidden');
+        if (btnEl) {
+          btnEl.className = 'tab-btn px-3 py-1.5 rounded-xl text-xs sm:text-sm font-semibold transition-all flex items-center gap-2 text-slate-400 hover:text-slate-200 hover:bg-slate-850';
+        }
+      });
+
+      const activeView = document.getElementById(`view-${tabName}`);
+      const activeBtn = document.getElementById(`tab-btn-${tabName}`);
+      if (activeView) activeView.classList.remove('hidden');
+      if (activeBtn) {
+        activeBtn.className = 'tab-btn px-3 py-1.5 rounded-xl text-xs sm:text-sm font-semibold transition-all flex items-center gap-2 text-indigo-400 bg-indigo-950/70 border border-indigo-500/40 shadow-lg';
+      }
+
+      // Render tab data
+      if (tabName === 'actors') renderActors();
+      if (tabName === 'customers') renderCustomers();
+      if (tabName === 'shows') renderShows();
+      if (tabName === 'calendar') renderCalendar();
+      if (tabName === 'accounting') renderAccounting();
+      if (tabName === 'backup') renderBackupView();
+    };
+
+    function renderActors() {
+      const container = document.getElementById('actors-grid');
+      if (!container) return;
+
+      if (!appState.actors || appState.actors.length === 0) {
+        container.innerHTML = `
+          <div class="col-span-full text-center py-12 bg-slate-900 rounded-2xl border border-dashed border-slate-700/80 shadow-xl shadow-black/50">
+            <i class="fa-solid fa-user-slash text-3xl text-slate-500 mb-2"></i>
+            <p class="text-sm text-slate-300">No actors currently on roster.</p>
+            <button onclick="openActorModal()" class="mt-3 px-3 py-1.5 bg-indigo-600 hover:bg-indigo-500 rounded-xl text-xs text-white font-medium">Add First Actor</button>
+          </div>
+        `;
+        return;
+      }
+
+      container.innerHTML = appState.actors.map(actor => {
+        const assignedShows = appState.shows.filter(s => (s.actors || []).includes(actor.id));
+        const rateDisplay = (actor.rate !== undefined && !isNaN(actor.rate)) ? Number(actor.rate).toFixed(2) : '85.00';
+
+        return `
+          <div class="bg-slate-900 border border-slate-700/80 rounded-2xl p-5 shadow-2xl shadow-black/60 hover:border-amber-600/60 transition flex flex-col justify-between group">
+            <div>
+              <div class="flex items-start justify-between gap-2 mb-2">
+                <div>
+                  <h3 class="font-bold text-base text-white group-hover:text-amber-300 transition">${escapeHtml(actor.name)}</h3>
+                  <p class="text-xs text-amber-400 font-medium">${escapeHtml(actor.specialty || 'General Cast')}</p>
+                </div>
+                <div class="flex items-center gap-1.5">
+                  <span class="px-2 py-0.5 rounded-full text-[10px] font-bold bg-amber-950/90 border border-amber-600/40 text-amber-300 font-mono" title="Individual Actor Show Rate">
+                    $${rateDisplay}
+                  </span>
+                  <span class="px-2 py-0.5 rounded-full text-[10px] font-semibold ${actor.status === 'active' ? 'bg-emerald-950 text-emerald-400 border border-emerald-800' : 'bg-slate-950 text-slate-400 border border-slate-800'}">
+                    ${actor.status === 'active' ? 'Active' : 'Inactive'}
+                  </span>
+                </div>
+              </div>
+
+              <div class="space-y-1.5 text-xs text-slate-200 my-3.5">
+                <p class="flex items-center gap-2"><i class="fa-solid fa-envelope text-amber-500/80 text-[10px] w-4"></i> ${escapeHtml(actor.email)}</p>
+                <p class="flex items-center gap-2"><i class="fa-solid fa-phone text-amber-500/80 text-[10px] w-4"></i> ${escapeHtml(actor.phone)}</p>
+                ${actor.emergency ? `<p class="flex items-center gap-2 text-[11px] text-amber-300/90"><i class="fa-solid fa-kit-medical text-amber-400 text-[10px] w-4"></i> ${escapeHtml(actor.emergency)}</p>` : ''}
+              </div>
+            </div>
+
+            <div class="pt-3 border-t border-slate-800 flex items-center justify-between gap-2">
+              <button onclick="openActorLog('${actor.id}')" class="px-3 py-1.5 rounded-xl bg-slate-950 hover:bg-slate-850 border border-slate-800 text-amber-300 text-xs font-semibold flex items-center gap-1.5 transition">
+                <i class="fa-solid fa-list-check text-[11px]"></i> Show Log (${assignedShows.length})
+              </button>
+              <div class="flex items-center gap-1">
+                <button onclick="openActorModal('${actor.id}')" title="Edit Actor" class="w-8 h-8 rounded-xl bg-slate-950 hover:bg-slate-850 border border-slate-800 text-slate-300 flex items-center justify-center transition">
+                  <i class="fa-solid fa-pen text-xs"></i>
+                </button>
+                <button onclick="deleteActor('${actor.id}')" title="Remove Actor" class="w-8 h-8 rounded-xl bg-slate-950 hover:bg-rose-950/60 border border-slate-800 text-slate-400 hover:text-rose-400 flex items-center justify-center transition">
+                  <i class="fa-solid fa-trash-can text-xs"></i>
+                </button>
+              </div>
+            </div>
+          </div>
+        `;
+      }).join('');
+    }
+
+    window.openActorModal = function(actorId = null) {
+      const form = document.getElementById('form-actor');
+      form.reset();
+      if (actorId) {
+        const actor = appState.actors.find(a => a.id === actorId);
+        if (!actor) return;
+        document.getElementById('modal-actor-title').textContent = 'Edit Actor Details';
+        document.getElementById('actor-id').value = actor.id;
+        document.getElementById('actor-name').value = actor.name;
+        const rateEl = document.getElementById('actor-rate');
+        if (rateEl) rateEl.value = (actor.rate !== undefined ? actor.rate : 85.00).toFixed(2);
+        document.getElementById('actor-email').value = actor.email;
+        document.getElementById('actor-phone').value = actor.phone;
+        document.getElementById('actor-emergency').value = actor.emergency || '';
+        document.getElementById('actor-specialty').value = actor.specialty || '';
+        document.getElementById('actor-status').value = actor.status || 'active';
+      } else {
+        document.getElementById('modal-actor-title').textContent = 'Add New Actor';
+        document.getElementById('actor-id').value = '';
+        const rateEl = document.getElementById('actor-rate');
+        if (rateEl) rateEl.value = '85.00';
+      }
+      document.getElementById('modal-actor').classList.remove('hidden');
+    };
+
+    window.closeActorModal = function() {
+      document.getElementById('modal-actor').classList.add('hidden');
+    };
+
+    window.saveActor = function(e) {
+      e.preventDefault();
+      const id = document.getElementById('actor-id').value;
+      const rateInputEl = document.getElementById('actor-rate');
+      const rateInput = rateInputEl ? parseFloat(rateInputEl.value) : 85.00;
+      const actorData = {
+        name: document.getElementById('actor-name').value.trim(),
+        rate: isNaN(rateInput) ? 85.00 : rateInput,
+        email: document.getElementById('actor-email').value.trim(),
+        phone: document.getElementById('actor-phone').value.trim(),
+        emergency: document.getElementById('actor-emergency').value.trim(),
+        specialty: document.getElementById('actor-specialty').value.trim(),
+        status: document.getElementById('actor-status').value
+      };
+
+      if (id) {
+        const idx = appState.actors.findIndex(a => a.id === id);
+        if (idx !== -1) {
+          appState.actors[idx] = { ...appState.actors[idx], ...actorData };
+          showToast('Actor profile updated successfully.');
+        }
+      } else {
+        const newActor = { id: 'act-' + Date.now(), ...actorData };
+        appState.actors.push(newActor);
+        showToast('New actor added to roster.');
+      }
+      saveState();
+      closeActorModal();
+      renderActors();
+    };
+
+    window.deleteActor = function(actorId) {
+      const actor = appState.actors.find(a => a.id === actorId);
+      if (!actor) return;
+      openConfirmModal(
+        'Remove Actor from Roster',
+        `Are you sure you want to remove ${actor.name} from the cast roster? They will also be removed from any upcoming shows.`,
+        () => {
+          appState.actors = appState.actors.filter(a => a.id !== actorId);
+          appState.shows.forEach(s => {
+            if (s.actors) s.actors = s.actors.filter(id => id !== actorId);
+          });
+          saveState();
+          showToast(`${actor.name} removed from roster.`);
+          renderActors();
+        }
+      );
+    };
+
+    window.openActorLog = function(actorId) {
+      const actor = appState.actors.find(a => a.id === actorId);
+      if (!actor) return;
+      const assignedShows = appState.shows.filter(s => (s.actors || []).includes(actorId));
+
+      document.getElementById('modal-log-title').textContent = `${actor.name}'s Show Log`;
+      document.getElementById('modal-log-subtitle').textContent = `Total booked shows: ${assignedShows.length} | Standard rate: $${(actor.rate || 85).toFixed(2)}`;
+
+      const logBody = document.getElementById('modal-log-body');
+      if (assignedShows.length === 0) {
+        logBody.innerHTML = `<p class="text-xs text-slate-400 py-6 text-center">No shows currently assigned to this actor.</p>`;
+      } else {
+        logBody.innerHTML = assignedShows.map(s => {
+          const cust = appState.customers.find(c => c.id === s.customerId);
+          return `
+            <div class="p-3 rounded-xl bg-slate-950/70 border border-slate-800 flex items-center justify-between">
+              <div>
+                <p class="font-bold text-sm text-white">${escapeHtml(s.title)}</p>
+                <p class="text-xs text-slate-400"><i class="fa-solid fa-location-dot text-slate-600 text-[10px]"></i> ${escapeHtml(s.venue)} • ${cust ? escapeHtml(cust.name) : 'Private Venue'}</p>
+                <p class="text-[11px] text-indigo-400 mt-0.5"><i class="fa-solid fa-calendar text-[10px]"></i> ${formatReadableDate(s.date)} at ${s.time}</p>
+              </div>
+              <div class="text-right">
+                <span class="px-2 py-0.5 rounded text-[10px] font-semibold ${s.paid === 'Paid' ? 'bg-emerald-950 text-emerald-400' : 'bg-amber-950 text-amber-400'}">${s.paid}</span>
+                <p class="text-xs font-mono text-slate-300 mt-1">Prod: $${Number(s.fee).toFixed(2)}</p>
+              </div>
+            </div>
+          `;
+        }).join('');
+      }
+      document.getElementById('modal-log').classList.remove('hidden');
+    };
+
+    window.setShowFilter = function(filterMode) {
+      appState.settings.showFilter = filterMode;
+      saveState();
+      ['upcoming', 'all', 'past'].forEach(m => {
+        const btn = document.getElementById(`btn-show-${m}`);
+        if (btn) {
+          if (m === filterMode) {
+            btn.className = 'px-3 py-1.5 rounded-lg font-medium transition bg-indigo-600 text-white shadow';
+          } else {
+            btn.className = 'px-3 py-1.5 rounded-lg font-medium text-slate-400 hover:text-white transition';
+          }
+        }
+      });
+      renderShows();
+    };
+
+    function renderShows() {
+      const container = document.getElementById('shows-container');
+      if (!container) return;
+
+      const todayStr = new Date().toISOString().split('T')[0];
+      let filtered = [...appState.shows];
+
+      if (appState.settings.showFilter === 'upcoming') {
+        filtered = filtered.filter(s => s.date >= todayStr);
+      } else if (appState.settings.showFilter === 'past') {
+        filtered = filtered.filter(s => s.date < todayStr);
+      }
+      filtered.sort((a, b) => a.date.localeCompare(b.date));
+
+      if (filtered.length === 0) {
+        container.innerHTML = `
+          <div class="col-span-full text-center py-12 bg-slate-900 rounded-2xl border border-dashed border-slate-700/80 shadow-xl shadow-black/50">
+            <i class="fa-solid fa-masks-theater text-3xl text-slate-500 mb-2"></i>
+            <p class="text-sm text-slate-300">No shows found for the selected view range (${appState.settings.showFilter}).</p>
+            <button onclick="openShowModal()" class="mt-3 px-3 py-1.5 bg-indigo-600 hover:bg-indigo-500 rounded-xl text-xs text-white font-medium">Schedule Show</button>
+          </div>
+        `;
+        return;
+      }
+
+      container.innerHTML = filtered.map(show => {
+        const customer = appState.customers.find(c => c.id === show.customerId);
+        const castActors = (show.actors || []).map(aid => appState.actors.find(a => a.id === aid)).filter(Boolean);
+        const baseCost = show.baseCost !== undefined ? show.baseCost : ((appState.settings && appState.settings.costBase) || 400);
+        const aacRate = show.aacRate !== undefined ? show.aacRate : ((appState.settings && appState.settings.aacRate) || 200);
+        const travel = show.travelCost || 0;
+        const overnight = show.overnightCost || 0;
+
+        // Calculate actor rates portion
+        let actorRatesTotal = 0;
+        castActors.forEach(a => {
+          actorRatesTotal += (a.rate !== undefined ? a.rate : 85);
+        });
+
+        return `
+          <div id="show-card-${show.id}" class="bg-slate-900 border border-slate-700/80 rounded-2xl p-5 shadow-2xl shadow-black/60 hover:border-amber-600/60 transition flex flex-col justify-between">
+            <div>
+              <div class="flex items-start justify-between gap-2 mb-2">
+                <div>
+                  <h3 class="font-bold text-base text-white">${escapeHtml(show.title)}</h3>
+                  <p class="text-xs text-amber-400 font-medium">${customer ? escapeHtml(customer.name) : 'Independent Booking'}</p>
+                </div>
+                <span class="px-2 py-0.5 rounded-full text-[10px] font-semibold ${show.paid === 'Paid' ? 'bg-emerald-950 text-emerald-400 border border-emerald-800' : (show.paid === 'Pending' ? 'bg-amber-950 text-amber-400 border border-amber-800' : 'bg-rose-950 text-rose-400 border border-rose-800')}">
+                  ${show.paid}
+                </span>
+              </div>
+
+              <div class="space-y-1.5 text-xs text-slate-200 my-3">
+                <p class="flex items-center gap-2"><i class="fa-solid fa-calendar-day text-amber-500/80 text-[11px] w-4"></i> ${formatReadableDate(show.date)} at ${show.time}</p>
+                <p class="flex items-center gap-2"><i class="fa-solid fa-location-dot text-amber-500/80 text-[11px] w-4"></i> ${escapeHtml(show.venue)}</p>
+              </div>
+
+              <!-- Cost breakdown sunken box -->
+              <div class="bg-slate-950 rounded-xl p-3 border border-slate-800 text-[11px] space-y-1 mb-3.5 shadow-inner">
+                <div class="flex justify-between text-slate-300">
+                  <span>Base + AAC ($${Number(aacRate).toFixed(0)}/act):</span>
+                  <span class="font-mono text-white">$${(Number(baseCost) + (castActors.length * aacRate)).toFixed(2)}</span>
+                </div>
+                <div class="flex justify-between text-slate-300">
+                  <span>Actor Rates (${castActors.length}):</span>
+                  <span class="font-mono text-white">$${actorRatesTotal.toFixed(2)}</span>
+                </div>
+                ${(travel > 0 || overnight > 0) ? `
+                  <div class="flex justify-between text-amber-400/90 text-[10px]">
+                    <span>Travel & Stay Included:</span>
+                    <span>+$${(travel + overnight).toFixed(2)}</span>
+                  </div>
+                ` : ''}
+                <div class="flex justify-between font-semibold text-rose-400 pt-1.5 border-t border-slate-800">
+                  <span>Total Production Cost:</span>
+                  <span class="font-mono">$${Number(show.cost).toFixed(2)}</span>
+                </div>
+                <div class="flex justify-between font-semibold text-emerald-400">
+                  <span>Client Fee (Revenue):</span>
+                  <span class="font-mono">$${Number(show.fee).toFixed(2)}</span>
+                </div>
+              </div>
+
+              <!-- Cast Member badges -->
+              <div>
+                <p class="text-[10px] text-slate-400 font-semibold uppercase tracking-wider mb-1.5">Assigned Cast (${castActors.length})</p>
+                <div class="flex flex-wrap gap-1">
+                  ${castActors.length > 0 ? castActors.map(a => `
+                    <span class="px-2 py-0.5 bg-slate-950 border border-slate-800 text-amber-200 rounded-lg text-[10px] font-medium flex items-center gap-1">
+                      ${escapeHtml(a.name)} <span class="font-mono text-[9px] text-amber-400 font-bold">($${(a.rate || 85).toFixed(0)})</span>
+                    </span>
+                  `).join('') : '<span class="text-[11px] text-slate-400 italic">No actors assigned yet</span>'}
+                </div>
+              </div>
+            </div>
+
+            <div class="pt-3 mt-4 border-t border-slate-800 flex items-center justify-between">
+              <span class="text-[11px] text-slate-300"><i class="fa-solid fa-circle-check text-[10px] text-emerald-400"></i> ${show.status || 'Scheduled'}</span>
+              <div class="flex items-center gap-1">
+                <button onclick="openShowModal('${show.id}')" title="Edit Show" class="w-8 h-8 rounded-xl bg-slate-950 hover:bg-slate-850 border border-slate-800 text-slate-300 flex items-center justify-center transition">
+                  <i class="fa-solid fa-pen text-xs"></i>
+                </button>
+                <button onclick="deleteShow('${show.id}')" title="Delete Show" class="w-8 h-8 rounded-xl bg-slate-950 hover:bg-rose-950/60 border border-slate-800 text-slate-400 hover:text-rose-400 flex items-center justify-center transition">
+                  <i class="fa-solid fa-trash-can text-xs"></i>
+                </button>
+              </div>
+            </div>
+          </div>
+        `;
+      }).join('');
+    }
+
+    window.openShowModal = function(showId = null) {
+      const form = document.getElementById('form-show');
+      form.reset();
+
+      const custSelect = document.getElementById('show-customer');
+      custSelect.innerHTML = appState.customers.map(c => `<option value="${c.id}">${escapeHtml(c.name)}</option>`).join('');
+
+      const actorBox = document.getElementById('show-actor-checkboxes');
+      actorBox.innerHTML = appState.actors.map(a => `
+        <label class="flex items-center justify-between gap-2 p-1.5 rounded-lg bg-slate-900 hover:bg-slate-850 cursor-pointer border border-slate-800/80">
+          <div class="flex items-center gap-2 truncate">
+            <input type="checkbox" value="${a.id}" onchange="updateShowCostCalculation()" class="w-3.5 h-3.5 rounded text-indigo-600 bg-slate-950 border-slate-700">
+            <span class="text-[11px] text-slate-300 truncate">${escapeHtml(a.name)}</span>
+          </div>
+          <span class="text-[10px] font-mono text-amber-400 font-semibold px-1 rounded bg-slate-950 border border-slate-800 shrink-0">$${(a.rate || 85).toFixed(2)}</span>
+        </label>
+      `).join('');
+
+      if (showId) {
+        const shw = appState.shows.find(s => s.id === showId);
+        if (!shw) return;
+        document.getElementById('modal-show-title').textContent = 'Edit Show';
+        document.getElementById('show-id').value = shw.id;
+        document.getElementById('show-title').value = shw.title;
+        document.getElementById('show-customer').value = shw.customerId;
+        document.getElementById('show-venue').value = shw.venue;
+        document.getElementById('show-date').value = shw.date;
+        document.getElementById('show-time').value = shw.time;
+        
+        const baseCostInput = document.getElementById('show-base-cost');
+        const defaultBase = (appState.settings && appState.settings.costBase !== undefined) ? appState.settings.costBase : 400;
+        if (baseCostInput) baseCostInput.value = (shw.baseCost !== undefined ? shw.baseCost : defaultBase).toFixed(2);
+
+        const aacCostInput = document.getElementById('show-aac-cost');
+        const defaultAac = (appState.settings && appState.settings.aacRate !== undefined) ? appState.settings.aacRate : 200;
+        if (aacCostInput) aacCostInput.value = (shw.aacRate !== undefined ? shw.aacRate : defaultAac).toFixed(2);
+
+        const travelInput = document.getElementById('show-travel-cost');
+        if (travelInput) travelInput.value = (shw.travelCost !== undefined ? shw.travelCost : 0).toFixed(2);
+        
+        const overnightInput = document.getElementById('show-overnight-cost');
+        if (overnightInput) overnightInput.value = (shw.overnightCost !== undefined ? shw.overnightCost : 0).toFixed(2);
+        
+        document.getElementById('show-cost').value = shw.cost;
+        document.getElementById('show-fee').value = shw.fee;
+        document.getElementById('show-paid').value = shw.paid;
+        const statusEl = document.getElementById('show-status');
+        if (statusEl) statusEl.value = shw.status || 'Scheduled';
+
+        (shw.actors || []).forEach(aid => {
+          const cb = actorBox.querySelector(`input[value="${aid}"]`);
+          if (cb) cb.checked = true;
+        });
+        updateShowCostCalculation();
+      } else {
+        document.getElementById('modal-show-title').textContent = 'Schedule New Show';
+        document.getElementById('show-id').value = '';
+        document.getElementById('show-date').value = new Date().toISOString().split('T')[0];
+        document.getElementById('show-time').value = '19:00';
+        document.getElementById('show-fee').value = '2500.00';
+        
+        const baseCostInput = document.getElementById('show-base-cost');
+        const defaultBase = (appState.settings && appState.settings.costBase !== undefined) ? appState.settings.costBase : 400;
+        if (baseCostInput) baseCostInput.value = Number(defaultBase).toFixed(2);
+
+        const aacCostInput = document.getElementById('show-aac-cost');
+        const defaultAac = (appState.settings && appState.settings.aacRate !== undefined) ? appState.settings.aacRate : 200;
+        if (aacCostInput) aacCostInput.value = Number(defaultAac).toFixed(2);
+
+        const travelInput = document.getElementById('show-travel-cost');
+        if (travelInput) travelInput.value = '0.00';
+        
+        const overnightInput = document.getElementById('show-overnight-cost');
+        if (overnightInput) overnightInput.value = '0.00';
+        
+        const statusEl = document.getElementById('show-status');
+        if (statusEl) statusEl.value = 'Scheduled';
+
+        updateShowCostCalculation();
+      }
+      document.getElementById('modal-show').classList.remove('hidden');
+    };
+
+    window.closeShowModal = function() {
+      document.getElementById('modal-show').classList.add('hidden');
+    };
+
+    window.saveShow = function(e) {
+      e.preventDefault();
+      const id = document.getElementById('show-id').value;
+      const selectedActors = Array.from(document.querySelectorAll('#show-actor-checkboxes input[type="checkbox"]:checked')).map(cb => cb.value);
+      
+      const defaultBase = (appState.settings && appState.settings.costBase !== undefined) ? appState.settings.costBase : 400;
+      const defaultAac = (appState.settings && appState.settings.aacRate !== undefined) ? appState.settings.aacRate : 200;
+
+      const baseCostVal = parseFloat(document.getElementById('show-base-cost')?.value) || defaultBase;
+      const aacCostVal = parseFloat(document.getElementById('show-aac-cost')?.value) || defaultAac;
+      const travelVal = parseFloat(document.getElementById('show-travel-cost')?.value) || 0;
+      const overnightVal = parseFloat(document.getElementById('show-overnight-cost')?.value) || 0;
+
+      // Calculate individual actor rates total
+      let actorRatesTotal = 0;
+      selectedActors.forEach(aid => {
+        const act = appState.actors.find(a => a.id === aid);
+        actorRatesTotal += (act && act.rate !== undefined ? Number(act.rate) : 85);
+      });
+
+      const computedCost = baseCostVal + (selectedActors.length * aacCostVal) + actorRatesTotal + travelVal + overnightVal;
+      const costVal = parseFloat(document.getElementById('show-cost')?.value) || computedCost;
+      const feeVal = parseFloat(document.getElementById('show-fee')?.value) || 0;
+      const statusVal = document.getElementById('show-status')?.value || 'Scheduled';
+
+      const showData = {
+        title: document.getElementById('show-title').value.trim(),
+        customerId: document.getElementById('show-customer').value,
+        venue: document.getElementById('show-venue').value.trim(),
+        date: document.getElementById('show-date').value,
+        time: document.getElementById('show-time').value,
+        actors: selectedActors,
+        baseCost: baseCostVal,
+        aacRate: aacCostVal,
+        travelCost: travelVal,
+        overnightCost: overnightVal,
+        cost: costVal,
+        fee: feeVal,
+        paid: document.getElementById('show-paid').value,
+        status: statusVal
+      };
+
+      if (id) {
+        const idx = appState.shows.findIndex(s => s.id === id);
+        if (idx !== -1) {
+          appState.shows[idx] = { ...appState.shows[idx], ...showData };
+          showToast('Show details updated.');
+        }
+      } else {
+        const newShow = { id: 'shw-' + Date.now(), ...showData };
+        appState.shows.push(newShow);
+        showToast('New show scheduled successfully.');
+      }
+
+      saveState();
+      closeShowModal();
+      renderShows();
+      renderCalendar();
+      renderAccounting();
+    };
+
+    window.deleteShow = function(showId) {
+      const show = appState.shows.find(s => s.id === showId);
+      if (!show) return;
+      openConfirmModal(
+        'Cancel & Delete Show',
+        `Are you sure you want to delete "${show.title}"? This cannot be undone.`,
+        () => {
+          appState.shows = appState.shows.filter(s => s.id !== showId);
+          saveState();
+          showToast(`Show "${show.title}" deleted.`);
+          renderShows();
+          renderCalendar();
+          renderAccounting();
+        }
+      );
+    };
+
+    function renderCustomers() {
+      const container = document.getElementById('customers-grid');
+      if (!container) return;
+
+      if (!appState.customers || appState.customers.length === 0) {
+        container.innerHTML = `
+          <div class="col-span-full text-center py-12 bg-slate-900 rounded-2xl border border-dashed border-slate-700/80 shadow-xl shadow-black/50">
+            <i class="fa-solid fa-building-slash text-3xl text-slate-500 mb-2"></i>
+            <p class="text-sm text-slate-300">No customers registered yet.</p>
+            <button onclick="openCustomerModal()" class="mt-3 px-3 py-1.5 bg-indigo-600 hover:bg-indigo-500 rounded-xl text-xs text-white font-medium">Add Customer</button>
+          </div>
+        `;
+        return;
+      }
+
+      container.innerHTML = appState.customers.map(cust => {
+        const bookedShows = appState.shows.filter(s => s.customerId === cust.id);
+
+        return `
+          <div class="bg-slate-900 border border-slate-700/80 rounded-2xl p-5 shadow-2xl shadow-black/60 hover:border-amber-600/60 transition flex flex-col justify-between">
+            <div>
+              <div class="flex items-start justify-between gap-2 mb-2">
+                <div>
+                  <h3 class="font-bold text-base text-white">${escapeHtml(cust.name)}</h3>
+                  <p class="text-xs text-amber-400 font-medium"><i class="fa-solid fa-user-tie text-[10px]"></i> ${escapeHtml(cust.contactPerson)}</p>
+                </div>
+                <span class="px-2 py-0.5 rounded-full text-[10px] font-semibold bg-slate-950 border border-slate-800 text-amber-300">
+                  ${bookedShows.length} Booked
+                </span>
+              </div>
+
+              <div class="space-y-1.5 text-xs text-slate-200 my-3.5">
+                <p class="flex items-center gap-2"><i class="fa-solid fa-envelope text-amber-500/80 text-[10px] w-4"></i> ${escapeHtml(cust.email)}</p>
+                <p class="flex items-center gap-2"><i class="fa-solid fa-phone text-amber-500/80 text-[10px] w-4"></i> ${escapeHtml(cust.phone)}</p>
+                ${cust.address ? `<p class="flex items-center gap-2 text-slate-300"><i class="fa-solid fa-map-pin text-amber-500/80 text-[10px] w-4"></i> ${escapeHtml(cust.address)}</p>` : ''}
+              </div>
+            </div>
+
+            <div class="pt-3 border-t border-slate-800 flex items-center justify-between gap-2">
+              <button onclick="openCustomerBookedShows('${cust.id}')" class="px-3 py-1.5 rounded-xl bg-purple-950/80 hover:bg-purple-900/80 border border-purple-800/80 text-purple-200 text-xs font-semibold flex items-center gap-1.5 transition">
+                <i class="fa-solid fa-ticket text-[11px]"></i> Booked Shows (${bookedShows.length})
+              </button>
+              <div class="flex items-center gap-1">
+                <button onclick="openCustomerModal('${cust.id}')" title="Edit Customer" class="w-8 h-8 rounded-xl bg-slate-950 hover:bg-slate-850 border border-slate-800 text-slate-300 flex items-center justify-center transition">
+                  <i class="fa-solid fa-pen text-xs"></i>
+                </button>
+                <button onclick="deleteCustomer('${cust.id}')" title="Delete Customer" class="w-8 h-8 rounded-xl bg-slate-950 hover:bg-rose-950/60 border border-slate-800 text-slate-400 hover:text-rose-400 flex items-center justify-center transition">
+                  <i class="fa-solid fa-trash-can text-xs"></i>
+                </button>
+              </div>
+            </div>
+          </div>
+        `;
+      }).join('');
+    }
+
+    window.openCustomerModal = function(customerId = null) {
+      const form = document.getElementById('form-customer');
+      form.reset();
+      if (customerId) {
+        const cust = appState.customers.find(c => c.id === customerId);
+        if (!cust) return;
+        document.getElementById('modal-customer-title').textContent = 'Edit Customer';
+        document.getElementById('customer-id').value = cust.id;
+        document.getElementById('cust-name').value = cust.name;
+        document.getElementById('cust-contact').value = cust.contactPerson;
+        document.getElementById('cust-email').value = cust.email;
+        document.getElementById('cust-phone').value = cust.phone;
+        document.getElementById('cust-address').value = cust.address || '';
+      } else {
+        document.getElementById('modal-customer-title').textContent = 'Add Customer';
+        document.getElementById('customer-id').value = '';
+      }
+      document.getElementById('modal-customer').classList.remove('hidden');
+    };
+
+    window.closeCustomerModal = function() {
+      document.getElementById('modal-customer').classList.add('hidden');
+    };
+
+    window.saveCustomer = function(e) {
+      e.preventDefault();
+      const id = document.getElementById('customer-id').value;
+      const custData = {
+        name: document.getElementById('cust-name').value.trim(),
+        contactPerson: document.getElementById('cust-contact').value.trim(),
+        email: document.getElementById('cust-email').value.trim(),
+        phone: document.getElementById('cust-phone').value.trim(),
+        address: document.getElementById('cust-address').value.trim()
+      };
+
+      if (id) {
+        const idx = appState.customers.findIndex(c => c.id === id);
+        if (idx !== -1) {
+          appState.customers[idx] = { ...appState.customers[idx], ...custData };
+          showToast('Customer record updated.');
+        }
+      } else {
+        const newCust = { id: 'cust-' + Date.now(), ...custData };
+        appState.customers.push(newCust);
+        showToast('New customer added.');
+      }
+
+      saveState();
+      closeCustomerModal();
+      renderCustomers();
+    };
+
+    window.deleteCustomer = function(customerId) {
+      const cust = appState.customers.find(c => c.id === customerId);
+      if (!cust) return;
+      openConfirmModal(
+        'Delete Customer Profile',
+        `Are you sure you want to delete ${cust.name}? Shows associated with this client will remain in the database.`,
+        () => {
+          appState.customers = appState.customers.filter(c => c.id !== customerId);
+          saveState();
+          showToast(`Customer ${cust.name} removed.`);
+          renderCustomers();
+        }
+      );
+    };
+
+    window.openCustomerBookedShows = function(customerId) {
+      const cust = appState.customers.find(c => c.id === customerId);
+      if (!cust) return;
+      const booked = appState.shows.filter(s => s.customerId === customerId);
+      const totalSpend = booked.reduce((acc, s) => acc + (s.fee || 0), 0);
+
+      document.getElementById('modal-log-title').textContent = `${cust.name}`;
+      document.getElementById('modal-log-subtitle').textContent = `Total Bookings: ${booked.length} | Lifetime Billed Volume: $${totalSpend.toFixed(2)}`;
+
+      const logBody = document.getElementById('modal-log-body');
+      if (booked.length === 0) {
+        logBody.innerHTML = `<p class="text-xs text-slate-400 py-6 text-center">No shows currently booked for this client.</p>`;
+      } else {
+        logBody.innerHTML = booked.map(s => {
+          const cast = (s.actors || []).map(aid => appState.actors.find(a => a.id === aid)?.name).filter(Boolean);
+          return `
+            <div class="p-3 rounded-xl bg-slate-950/70 border border-slate-800 flex items-center justify-between">
+              <div>
+                <p class="font-bold text-sm text-white">${escapeHtml(s.title)}</p>
+                <p class="text-xs text-slate-400"><i class="fa-solid fa-location-dot text-slate-600 text-[10px]"></i> ${escapeHtml(s.venue)}</p>
+                <p class="text-[11px] text-indigo-400 mt-0.5"><i class="fa-solid fa-calendar text-[10px]"></i> ${formatReadableDate(s.date)} at ${s.time}</p>
+                <p class="text-[10px] text-slate-500 mt-0.5">Cast (${cast.length}): ${cast.join(', ') || 'Unassigned'}</p>
+              </div>
+              <div class="text-right">
+                <span class="px-2 py-0.5 rounded text-[10px] font-semibold ${s.paid === 'Paid' ? 'bg-emerald-950 text-emerald-400' : 'bg-amber-950 text-amber-400'}">${s.paid}</span>
+                <p class="text-xs font-mono text-emerald-400 font-bold mt-1">$${Number(s.fee).toFixed(2)}</p>
+              </div>
+            </div>
+          `;
+        }).join('');
+      }
+      document.getElementById('modal-log').classList.remove('hidden');
+    };
+
+    window.setCalendarMode = function(mode) {
+      appState.settings.calendarMode = mode;
+      saveState();
+      ['month', 'week'].forEach(m => {
+        const btn = document.getElementById(`cal-btn-${m}`);
+        if (btn) {
+          if (m === mode) {
+            btn.className = 'px-3 py-1.5 rounded-lg font-medium transition bg-indigo-600 text-white shadow';
+          } else {
+            btn.className = 'px-3 py-1.5 rounded-lg font-medium text-slate-400 hover:text-white transition';
+          }
+        }
+      });
+      renderCalendar();
+    };
+
+    window.calendarNav = function(delta) {
+      const cur = new Date(appState.settings.calendarDate);
+      if (appState.settings.calendarMode === 'month') {
+        cur.setMonth(cur.getMonth() + delta);
+      } else {
+        cur.setDate(cur.getDate() + (delta * 7));
+      }
+      appState.settings.calendarDate = cur.toISOString();
+      saveState();
+      renderCalendar();
+    };
+
+    window.calendarToday = function() {
+      appState.settings.calendarDate = new Date().toISOString();
+      saveState();
+      renderCalendar();
+    };
+
+    function renderCalendar() {
+      const board = document.getElementById('calendar-board');
+      const label = document.getElementById('cal-current-label');
+      if (!board || !label) return;
+
+      const baseDate = new Date(appState.settings.calendarDate);
+
+      if (appState.settings.calendarMode === 'month') {
+        const year = baseDate.getFullYear();
+        const month = baseDate.getMonth();
+        const monthNames = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
+        label.textContent = `${monthNames[month]} ${year}`;
+
+        const firstDayIndex = new Date(year, month, 1).getDay();
+        const daysInMonth = new Date(year, month + 1, 0).getDate();
+
+        let daysHtml = '';
+        const dayHeaders = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+        daysHtml += `<div class="grid grid-cols-7 gap-2 text-center text-xs font-semibold text-slate-400 pb-2 border-b border-slate-800">
+          ${dayHeaders.map(d => `<div>${d}</div>`).join('')}
+        </div>`;
+
+        daysHtml += `<div class="grid grid-cols-7 gap-2 pt-2">`;
+        for (let i = 0; i < firstDayIndex; i++) {
+          daysHtml += `<div class="min-h-[100px] p-1.5 rounded-xl bg-slate-950/30 border border-slate-800/40 opacity-40"></div>`;
+        }
+
+        const todayStr = new Date().toISOString().split('T')[0];
+
+        for (let day = 1; day <= daysInMonth; day++) {
+          const dateStr = `${year}-${String(month + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
+          const isToday = dateStr === todayStr;
+          const dayShows = appState.shows.filter(s => s.date === dateStr);
+
+          daysHtml += `
+            <div class="min-h-[110px] p-1.5 rounded-xl bg-slate-950/70 border ${isToday ? 'border-indigo-500 shadow-md shadow-indigo-500/10' : 'border-slate-800'} flex flex-col justify-between">
+              <div class="flex items-center justify-between mb-1">
+                <span class="text-xs font-bold ${isToday ? 'text-indigo-400 bg-indigo-950 px-1.5 py-0.5 rounded-md' : 'text-slate-300'}">${day}</span>
+                ${dayShows.length > 0 ? `<span class="text-[9px] font-bold text-amber-400">${dayShows.length} show${dayShows.length > 1 ? 's' : ''}</span>` : ''}
+              </div>
+              <div class="space-y-1 overflow-y-auto max-h-[85px] custom-scrollbar">
+                ${dayShows.map(s => `
+                  <div onclick="goToShowsTabFromCalendar('${s.id}')" title="Click to view show details in SHOWS tab" class="p-1 rounded-lg bg-indigo-950/80 hover:bg-indigo-900 border border-indigo-700/50 text-[10px] text-indigo-200 cursor-pointer transition truncate">
+                    <i class="fa-solid fa-clapperboard text-[8px] mr-1 text-amber-400"></i> ${escapeHtml(s.title)}
+                  </div>
+                `).join('')}
+              </div>
+            </div>
+          `;
+        }
+        daysHtml += `</div>`;
+        board.innerHTML = daysHtml;
+
+      } else {
+        // Week View
+        const current = new Date(baseDate);
+        const dayOfWeek = current.getDay();
+        current.setDate(current.getDate() - dayOfWeek);
+
+        const weekDays = [];
+        for (let i = 0; i < 7; i++) {
+          weekDays.push(new Date(current));
+          current.setDate(current.getDate() + 1);
+        }
+
+        const startStr = weekDays[0].toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+        const endStr = weekDays[6].toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+        label.textContent = `${startStr} – ${endStr}`;
+
+        const todayStr = new Date().toISOString().split('T')[0];
+
+        let weekHtml = `<div class="grid grid-cols-7 gap-2">`;
+        weekDays.forEach(dateObj => {
+          const dateStr = dateObj.toISOString().split('T')[0];
+          const isToday = dateStr === todayStr;
+          const dayShows = appState.shows.filter(s => s.date === dateStr);
+          const dayName = dateObj.toLocaleDateString('en-US', { weekday: 'short' });
+          const dayNum = dateObj.getDate();
+
+          weekHtml += `
+            <div class="min-h-[280px] p-2 rounded-xl bg-slate-950/70 border ${isToday ? 'border-indigo-500 shadow-lg shadow-indigo-500/10' : 'border-slate-800'} flex flex-col">
+              <div class="text-center pb-2 border-b border-slate-800 mb-2">
+                <p class="text-[11px] font-semibold text-slate-400 uppercase">${dayName}</p>
+                <p class="text-base font-extrabold ${isToday ? 'text-indigo-400' : 'text-white'}">${dayNum}</p>
+              </div>
+              <div class="flex-1 space-y-1.5 overflow-y-auto custom-scrollbar">
+                ${dayShows.map(s => `
+                  <div onclick="goToShowsTabFromCalendar('${s.id}')" title="Click to view details in SHOWS tab" class="p-2 rounded-xl bg-indigo-950/80 hover:bg-indigo-900 border border-indigo-700/60 text-xs text-indigo-100 cursor-pointer transition shadow">
+                    <p class="font-bold truncate text-[11px]">${escapeHtml(s.title)}</p>
+                    <p class="text-[10px] text-slate-400"><i class="fa-regular fa-clock text-[9px]"></i> ${s.time}</p>
+                    <p class="text-[10px] text-indigo-300 truncate"><i class="fa-solid fa-location-pin text-[9px]"></i> ${escapeHtml(s.venue)}</p>
+                  </div>
+                `).join('')}
+              </div>
+            </div>
+          `;
+        });
+        weekHtml += `</div>`;
+        board.innerHTML = weekHtml;
+      }
+    }
+
+    window.goToShowsTabFromCalendar = function(showId) {
+      setShowFilter('all');
+      switchTab('shows');
+      setTimeout(() => {
+        const card = document.getElementById(`show-card-${showId}`);
+        if (card) {
+          card.scrollIntoView({ behavior: 'smooth', block: 'center' });
+          card.classList.add('highlight-card');
+          setTimeout(() => card.classList.remove('highlight-card'), 3200);
+        }
+      }, 150);
+    };
+
+    window.setAccountingFilter = function(filterMode) {
+      appState.settings.accountingFilter = filterMode;
+      saveState();
+      ['upcoming', 'all', 'past'].forEach(m => {
+        const btn = document.getElementById(`btn-acct-${m}`);
+        if (btn) {
+          if (m === filterMode) {
+            btn.className = 'px-3 py-1.5 rounded-lg font-medium transition bg-indigo-600 text-white shadow';
+          } else {
+            btn.className = 'px-3 py-1.5 rounded-lg font-medium text-slate-400 hover:text-white transition';
+          }
+        }
+      });
+      renderAccounting();
+    };
+
+    function renderAccounting() {
+      const tbody = document.getElementById('accounting-table-body');
+      if (!tbody) return;
+
+      const todayStr = new Date().toISOString().split('T')[0];
+      let filtered = [...appState.shows];
+
+      if (appState.settings.accountingFilter === 'upcoming') {
+        filtered = filtered.filter(s => s.date >= todayStr);
+      } else if (appState.settings.accountingFilter === 'past') {
+        filtered = filtered.filter(s => s.date < todayStr);
+      }
+      filtered.sort((a, b) => a.date.localeCompare(b.date));
+
+      let totalFee = 0;
+      let totalCost = 0;
+      let paidCount = 0;
+
+      filtered.forEach(s => {
+        totalFee += (s.fee || 0);
+        totalCost += (s.cost || 0);
+        if (s.paid === 'Paid') paidCount++;
+      });
+
+      const netProfit = totalFee - totalCost;
+
+      document.getElementById('acct-total-fee').textContent = formatMoney(totalFee);
+      document.getElementById('acct-total-cost').textContent = formatMoney(totalCost);
+      const netEl = document.getElementById('acct-net-profit');
+      netEl.textContent = formatMoney(netProfit);
+      netEl.className = `text-xl font-extrabold mt-1 ${netProfit >= 0 ? 'text-emerald-400' : 'text-rose-400'}`;
+      document.getElementById('acct-paid-count').textContent = `${paidCount} / ${filtered.length} Paid`;
+
+      if (filtered.length === 0) {
+        tbody.innerHTML = `
+          <tr>
+            <td colspan="7" class="text-center py-8 text-slate-500 text-xs italic">
+              No shows recorded in the selected timeline (${appState.settings.accountingFilter}).
+            </td>
+          </tr>
+        `;
+        return;
+      }
+
+      tbody.innerHTML = filtered.map(s => {
+        const actorNames = (s.actors || []).map(aid => appState.actors.find(a => a.id === aid)?.name).filter(Boolean);
+        const cost = s.cost || 0;
+        const fee = s.fee || 0;
+        const net = fee - cost;
+
+        return `
+          <tr class="hover:bg-slate-900/60 transition">
+            <td class="py-3 px-4 font-semibold text-white">
+              <div>${escapeHtml(s.title)}</div>
+              <div class="text-[11px] text-slate-400 font-normal"><i class="fa-solid fa-location-dot text-[10px]"></i> ${escapeHtml(s.venue)}</div>
+            </td>
+            <td class="py-3 px-4 text-slate-300 whitespace-nowrap font-mono text-xs">
+              ${formatReadableDate(s.date)}
+            </td>
+            <td class="py-3 px-4 text-slate-300">
+              <div class="flex flex-wrap gap-1 max-w-xs">
+                ${actorNames.length > 0 ? actorNames.map(name => `
+                  <span class="px-1.5 py-0.5 bg-slate-800 rounded text-[10px] text-indigo-300">${escapeHtml(name)}</span>
+                `).join('') : '<span class="text-slate-500 text-xs italic">None</span>'}
+              </div>
+            </td>
+            <td class="py-3 px-4 font-mono text-rose-300 text-xs">$${cost.toFixed(2)}</td>
+            <td class="py-3 px-4 font-mono text-emerald-300 text-xs font-bold">$${fee.toFixed(2)}</td>
+            <td class="py-3 px-4 font-mono text-xs font-bold ${net >= 0 ? 'text-emerald-400' : 'text-rose-400'}">$${net.toFixed(2)}</td>
+            <td class="py-3 px-4">
+              <select onchange="toggleAccountingPaidStatus('${s.id}', this.value)" class="bg-slate-950 border border-slate-700 text-xs font-semibold rounded-lg px-2 py-1 ${s.paid === 'Paid' ? 'text-emerald-400' : (s.paid === 'Pending' ? 'text-amber-400' : 'text-rose-400')} focus:outline-none">
+                <option value="Paid" ${s.paid === 'Paid' ? 'selected' : ''}>Paid</option>
+                <option value="Pending" ${s.paid === 'Pending' ? 'selected' : ''}>Pending</option>
+                <option value="Overdue" ${s.paid === 'Overdue' ? 'selected' : ''}>Overdue</option>
+              </select>
+            </td>
+          </tr>
+        `;
+      }).join('');
+    }
+
+    window.toggleAccountingPaidStatus = function(showId, newStatus) {
+      const show = appState.shows.find(s => s.id === showId);
+      if (show) {
+        show.paid = newStatus;
+        saveState();
+        showToast(`Updated payment status of "${show.title}" to ${newStatus}.`);
+        renderAccounting();
+      }
+    };
+
+    function renderBackupView() {
+      const list = document.getElementById('backup-history-list');
+      if (!list) return;
+
+      const history = appState.backupHistory || [];
+      if (history.length === 0) {
+        list.innerHTML = `<p class="text-slate-500 italic py-2">No backups logged yet.</p>`;
+        return;
+      }
+
+      list.innerHTML = history.slice(0, 15).map(item => `
+        <div class="flex items-center justify-between p-2 rounded-xl bg-slate-950/60 border border-slate-800">
+          <div class="flex items-center gap-2">
+            <i class="fa-solid fa-shield-cat text-amber-400 text-xs"></i>
+            <div>
+              <p class="font-semibold text-slate-300">${escapeHtml(item.type || 'Backup')}</p>
+              <p class="text-[10px] text-slate-500">${new Date(item.timestamp).toLocaleString()} • ${item.filename || 'default.json'}</p>
+            </div>
+          </div>
+          <span class="text-[11px] font-mono text-indigo-400">${item.recordsCount || 0} records</span>
+        </div>
+      `).join('');
+    }
+
+    window.triggerImmediateAutoBackup = function() {
+      performAutoBackup(false);
+      showToast('Immediate snapshot saved successfully.');
+    };
+
+    window.clearBackupLog = function() {
+      appState.backupHistory = [];
+      saveState();
+      renderBackupView();
+      showToast('Backup log cleared.');
+    };
+
+    function startAutoBackupCycle() {
+      if (autoBackupInterval) clearInterval(autoBackupInterval);
+      autoBackupCountdown = 300;
+
+      autoBackupInterval = setInterval(() => {
+        autoBackupCountdown--;
+        const timerEl = document.getElementById('backup-timer-display');
+        if (timerEl) {
+          const mins = Math.floor(autoBackupCountdown / 60);
+          const secs = autoBackupCountdown % 60;
+          timerEl.textContent = `${String(mins).padStart(2, '0')}:${String(secs).padStart(2, '0')}`;
+        }
+
+        if (autoBackupCountdown <= 0) {
+          performAutoBackup(false);
+          autoBackupCountdown = 300;
+        }
+      }, 1000);
+    }
+
+    async function performAutoBackup(isStartup = false) {
+      const dataStr = JSON.stringify(appState, null, 2);
+      const filename = 'default.json';
+      const recordCount = (appState.actors.length + appState.shows.length + appState.customers.length);
+
+      appState.backupHistory.unshift({
+        id: 'bkh-' + Date.now(),
+        timestamp: new Date().toISOString(),
+        type: isStartup ? 'Startup Auto-Backup' : '5-Min Auto-Backup',
+        recordsCount: recordCount,
+        filename: filename
+      });
+      saveState();
+      renderBackupView();
+
+      if (directoryHandle) {
+        try {
+          const fileHandle = await directoryHandle.getFileHandle(filename, { create: true });
+          const writable = await fileHandle.createWritable();
+          await writable.write(dataStr);
+          await writable.close();
+          console.log(`Auto-backup saved to linked directory: ${filename}`);
+          return;
+        } catch (err) {
+          console.warn('Directory handle write failed, falling back:', err);
+        }
+      }
+
+      if (isStartup) {
+        console.log('Startup auto-backup created default.json in application state.');
+      }
+    }
+
+    window.chooseDefaultFolderForAutoBackup = async function() {
+      if (!('showDirectoryPicker' in window)) {
+        showToast('Directory Picker is not supported in this browser. Direct download will be used.');
+        return;
+      }
+      try {
+        directoryHandle = await window.showDirectoryPicker();
+        const statusBox = document.getElementById('dir-status-box');
+        if (statusBox) {
+          statusBox.innerHTML = `<span class="text-emerald-400 font-semibold"><i class="fa-solid fa-check mr-1"></i> Directory linked!</span> Auto-backups will save directly to this folder as <code>default.json</code>.`;
+        }
+        showToast('Directory successfully linked for automated backups!');
+        performAutoBackup(false);
+      } catch (err) {
+        if (err.name !== 'AbortError') {
+          console.error(err);
+          showToast('Failed to select directory.');
+        }
+      }
+    };
+
+    window.saveBackupWithFolderPicker = async function() {
+      const dataStr = JSON.stringify(appState, null, 2);
+      const defaultName = `bmw-show-assistant-backup-${new Date().toISOString().split('T')[0]}.json`;
+
+      if ('showSaveFilePicker' in window) {
+        try {
+          const handle = await window.showSaveFilePicker({
+            suggestedName: defaultName,
+            types: [{
+              description: 'JSON Backup File',
+              accept: { 'application/json': ['.json'] }
+            }]
+          });
+          const writable = await handle.createWritable();
+          await writable.write(dataStr);
+          await writable.close();
+          showToast(`Backup saved to selected folder: ${handle.name}`);
+
+          appState.backupHistory.unshift({
+            id: 'bkh-' + Date.now(),
+            timestamp: new Date().toISOString(),
+            type: 'Manual Export (Picker)',
+            recordsCount: (appState.actors.length + appState.shows.length + appState.customers.length),
+            filename: handle.name
+          });
+          saveState();
+          renderBackupView();
+          return;
+        } catch (err) {
+          if (err.name === 'AbortError') return;
+          console.warn('File picker failed, using direct download fallback:', err);
+        }
+      }
+      downloadBackupDirect(defaultName);
+    };
+
+    window.downloadBackupDirect = function(filename = 'default.json') {
+      const dataStr = JSON.stringify(appState, null, 2);
+      const blob = new Blob([dataStr], { type: 'application/json' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = filename;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+      showToast(`Downloaded backup file: ${filename}`);
+
+      appState.backupHistory.unshift({
+        id: 'bkh-' + Date.now(),
+        timestamp: new Date().toISOString(),
+        type: 'Direct File Download',
+        recordsCount: (appState.actors.length + appState.shows.length + appState.customers.length),
+        filename: filename
+      });
+      saveState();
+      renderBackupView();
+    };
+
+    window.handleFileImport = function(event) {
+      const file = event.target.files[0];
+      if (!file) return;
+
+      const autoAccept = document.getElementById('auto-accept-overwrite')?.checked ?? true;
+      const reader = new FileReader();
+
+      reader.onload = function(e) {
+        try {
+          const imported = JSON.parse(e.target.result);
+          if (!imported.actors || !imported.shows) {
+            throw new Error('Invalid backup structure: missing actors or shows roster.');
+          }
+
+          const applyImport = () => {
+            appState.actors = imported.actors || [];
+            appState.shows = imported.shows || [];
+            appState.customers = imported.customers || [];
+            if (imported.settings) appState.settings = { ...appState.settings, ...imported.settings };
+
+            appState.backupHistory.unshift({
+              id: 'bkh-' + Date.now(),
+              timestamp: new Date().toISOString(),
+              type: 'File Imported / Restored',
+              recordsCount: (appState.actors.length + appState.shows.length + appState.customers.length),
+              filename: file.name
+            });
+            saveState();
+
+            renderActors();
+            renderShows();
+            renderCustomers();
+            renderCalendar();
+            renderAccounting();
+            renderBackupView();
+
+            showToast(`Restored ${appState.actors.length} actors and ${appState.shows.length} shows.`);
+          };
+
+          if (autoAccept) {
+            applyImport();
+          } else {
+            openConfirmModal(
+              'Overwrite Current App Data?',
+              `Importing "${file.name}" will overwrite current actors, shows, and customer profiles with the backup contents. Proceed?`,
+              applyImport
+            );
+          }
+        } catch (err) {
+          console.error('Import error:', err);
+          showToast('Error importing file: ' + err.message);
+        }
+      };
+      reader.readAsText(file);
+      event.target.value = '';
+    };
+
+    function formatReadableDate(dateStr) {
+      if (!dateStr) return '';
+      const [y, m, d] = dateStr.split('-');
+      const dt = new Date(y, m - 1, d);
+      return dt.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+    }
+
+    function formatMoney(amount) {
+      return '$' + Number(amount || 0).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+    }
+
+    function escapeHtml(str) {
+      if (!str) return '';
+      return String(str)
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&#039;');
+    }
+
+    function showToast(message) {
+      const container = document.getElementById('toast-container');
+      if (!container) return;
+      const toast = document.createElement('div');
+      toast.className = 'bg-slate-900/95 border border-indigo-500/50 text-white px-4 py-3 rounded-2xl shadow-2xl text-xs font-semibold flex items-center gap-2.5 backdrop-blur-md transition-all duration-300 transform translate-y-2 opacity-0 pointer-events-auto';
+      toast.innerHTML = `<i class="fa-solid fa-circle-check text-amber-400 text-sm"></i> <span>${escapeHtml(message)}</span>`;
+      container.appendChild(toast);
+
+      requestAnimationFrame(() => {
+        toast.classList.remove('translate-y-2', 'opacity-0');
+      });
+
+      setTimeout(() => {
+        toast.classList.add('opacity-0', 'translate-y-2');
+        setTimeout(() => toast.remove(), 300);
+      }, 3500);
+    }
+
+    function openConfirmModal(title, message, onConfirm) {
+      document.getElementById('confirm-title').textContent = title;
+      document.getElementById('confirm-message').textContent = message;
+
+      const confirmBtn = document.getElementById('confirm-action-btn');
+      const cancelBtn = document.getElementById('confirm-cancel-btn');
+      const modal = document.getElementById('modal-confirm');
+
+      const cleanup = () => {
+        modal.classList.add('hidden');
+        confirmBtn.onclick = null;
+        cancelBtn.onclick = null;
+      };
+
+      confirmBtn.onclick = () => {
+        cleanup();
+        if (onConfirm) onConfirm();
+      };
+      cancelBtn.onclick = cleanup;
+
+      modal.classList.remove('hidden');
+    }
+
+    window.closeLogModal = function() {
+      document.getElementById('modal-log').classList.add('hidden');
+    };
+
+    window.addEventListener('DOMContentLoaded', () => {
+      loadState();
+      // Sync global cost base and AAC inputs in the SHOWS tab with saved state
+      const costBaseInput = document.getElementById('shows-base-cost');
+      if (costBaseInput && appState.settings && appState.settings.costBase !== undefined) {
+        costBaseInput.value = appState.settings.costBase;
+      }
+      const aacRateInput = document.getElementById('shows-aac-rate');
+      if (aacRateInput && appState.settings && appState.settings.aacRate !== undefined) {
+        aacRateInput.value = appState.settings.aacRate;
+      }
+      switchTab('help');
+      startAutoBackupCycle();
+      performAutoBackup(true); // Startup auto-backup
+
+      // PC Desktop Keyboard Shortcuts (Keys 1-7 switch tabs when not focused in an input)
+      window.addEventListener('keydown', (e) => {
+        const activeTag = document.activeElement ? document.activeElement.tagName.toLowerCase() : '';
+        if (activeTag === 'input' || activeTag === 'textarea' || activeTag === 'select') return;
+        
+        const keyMap = {
+          '1': 'help',
+          '2': 'actors',
+          '3': 'customers',
+          '4': 'shows',
+          '5': 'calendar',
+          '6': 'accounting',
+          '7': 'backup'
+        };
+
+        if (keyMap[e.key]) {
+          e.preventDefault();
+          switchTab(keyMap[e.key]);
+        }
+      });
+    });
+  </script>
+</body>
+</html>
